@@ -16,11 +16,6 @@ loc_ip_prefix = s.getsockname()[0].split('.')[:2]
 
 mask = [~int(_byte) & 0xff for _byte in _mask.split('.')]
 
-#Search IP's from X.X.0.0 to X.X.255.255
-for i in range(
-
-
-
 print(s.getsockname()[0])
 print(_mask)
 s.close()
