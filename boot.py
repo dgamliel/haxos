@@ -10,4 +10,3 @@ def getPiNum():
     piNum = config['piNum']['number']
     return piNum
 
-print(piNum)
