@@ -25,6 +25,11 @@ def __main__():
 	mainSock.listen(10)
 
 	
+	sockets = [socket.socket() for i in range(5)]
+	
+	#Dummy connection to see if it works
+	tmpSock = sockets[0].connect((openDevices[0], PORT))
+
 
 	while True:
 		newConnection = mainSock.accept()
