@@ -4,14 +4,19 @@ import threading
 import paxos
 import network
 
-
-
 PORT = 10000
 
 def test(connection):
 	connInfo = connection.gethostname()
 	print("Connection received from {}".fmt(connInfo))
+  
 
+def tryConnection(socket, openDevices):
+	try:
+		deviceIP = openDevices[0]
+		socket.connect((deviceIP, PORT))
+	else:
+		print("Trying to connect to ", deviceIP)
 
 def __main__():
 
@@ -24,14 +29,15 @@ def __main__():
 	mainSock.bind((localIP, PORT))
 	mainSock.listen(10)
 
-	
+
 	sockets = [socket.socket() for i in range(5)]
 	
 	#Dummy connection to see if it works
-	tmpSock = sockets[0].connect((openDevices[0], PORT))
-
+	trySock = sockets[0]
+	
 
 	while True:
+		threading.Thread(target=tryConnection, args=(trySock, openDevices)).start()
 		newConnection = mainSock.accept()
 		threading.Thread(target=test,args=(newConnection)).start()
 
