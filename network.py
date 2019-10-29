@@ -7,7 +7,7 @@ def scanForPis():
 		madeIP = prefix + str(i)
 		mac = get_mac_address(ip=madeIP, network_request=True)
 
-		if mac is not None and mac != '00:00:00:00:00:00':
+		if mac is not None and 'b8:27:eb' in mac:
 			pi = madeIP
 			pis.append(madeIP)
 

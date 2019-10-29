@@ -15,7 +15,7 @@ def tryConnection(socket, openDevices):
 	try:
 		deviceIP = openDevices[0]
 		socket.connect((deviceIP, PORT))
-	else:
+	except:
 		print("Trying to connect to ", deviceIP)
 
 def __main__():
