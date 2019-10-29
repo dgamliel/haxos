@@ -34,7 +34,8 @@ def __main__():
 	
 	#Dummy connection to see if it works
 	trySock = sockets[0]
-	
+	getHost = openDevices[0], PORT
+	trySock.connect((getHost))	
 
 	while True:
 		threading.Thread(target=tryConnection, args=(trySock, openDevices)).start()
