@@ -11,8 +11,12 @@ def test(connection):
   
 
 def tryConnection(socket):
-	while True:
+
+	connected=False
+
+	while not connected:
 			openDevices = network.scanForPis()
+			print(openDevices)
 
 			if len(openDevices) == 0:
 				print("No available pis on the network... retrying")
@@ -21,9 +25,16 @@ def tryConnection(socket):
 
 
 			deviceIP = openDevices[0]
-			print("Attempting to connect to", deviceIP, PORT)
-			socket.connect((deviceIP, PORT))
-			print("Failed to connect to pi... retrying")
+
+			try:
+				print("Attempting to connect to", deviceIP, PORT)
+				socket.connect((deviceIP, PORT))
+				connected=True
+			except:
+				print("Failed to connect to pi... retrying")
+
+
+	print("Connection achieved!")
 
 def __main__():
 
