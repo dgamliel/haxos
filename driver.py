@@ -4,37 +4,38 @@ import threading
 import paxos
 import network
 
-PORT = 10000
+PORT   = 10000
+NUMPIS = 3
+OTHERPIS = NUMPIS-1
 
 def test(connection):
 	print("Connection received from {}, {}".format(connection[0], connection[1]))
   
 
-def tryConnection(socket):
+def bcastConnect(socketList):
 
 	connected=False
+	amountConnected = 0
 
 	while not connected:
 			openDevices = network.scanForPis()
-			print(openDevices)
 
-			if len(openDevices) == 0:
-				print("No available pis on the network... retrying")
-				continue
+			print("----- Attempting to connect to {} of {} other pis -----".format(amountConnected, OTHERPIS))
 
-
-
-			deviceIP = openDevices[0]
-
+			#Attempt to connect to all pis
 			try:
+				deviceIP = openDevices[amountConnected]
 				print("Attempting to connect to", deviceIP, PORT)
-				socket.connect((deviceIP, PORT))
+				socketList[amountConnected].connect((deviceIP, PORT))
+				amountConnected += 1
+			except Exception as e:
+				print(e)
+				print("Failed to connect to pi at {}... retrying".format(deviceIP))
+
+			if amountConnected == OTHERPIS:
 				connected=True
-			except:
-				print("Failed to connect to pi... retrying")
 
-
-	print("Connection achieved!")
+	print("ALL CONNECTIONS ACHIEVED")
 
 def __main__():
 
@@ -48,11 +49,10 @@ def __main__():
 	mainSock.bind((localIP, PORT))
 	mainSock.listen(10)
 
-	sockets = [socket.socket() for i in range(5)]
-	trySock = sockets[0]
+	socketList = [socket.socket() for i in range(OTHERPIS)]
 
-
-	threading.Thread(target=tryConnection, args=(trySock,)).start()
+	#Start attempting to connect to all pis
+	threading.Thread(target=bcastConnect, args=(socketList,)).start()
 
 
 	while True:
