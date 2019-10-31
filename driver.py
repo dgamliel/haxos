@@ -11,22 +11,17 @@ def test(connection):
 	print("Connection received from {}".fmt(connInfo))
   
 
-def tryConnection(socket, openDevices):
+def tryConnection(socket):
 	while True:
 		try:
+			openDevices = network.scanForPis()
 			deviceIP = openDevices[0]
+			print("Attempting to connect to", deviceIp, PORT)
 			socket.connect((deviceIP, PORT))
 		except:
-			print("Trying to connect to ", deviceIP)
+			print("Failed to connect to pi... retrying")
 
 def __main__():
-
-	#Returns list of all other pis on the network
-	openDevices = network.scanForPis()
-
-	if len(openDevices) == 0:
-		print("NO DEVICES FOUND")
-		sys.exit(1)
 
 	#Set up my listener socket
 	mainSock = socket.socket()	
@@ -38,7 +33,7 @@ def __main__():
 	trySock = sockets[0]
 
 	while True:
-		threading.Thread(target=tryConnection, args=(trySock, openDevices)).start()
+		threading.Thread(target=tryConnection, args=(trySock,)).start()
 		newConnection = mainSock.accept()
 		threading.Thread(target=test,args=(newConnection)).start()
 
