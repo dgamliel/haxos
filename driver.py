@@ -12,12 +12,12 @@ def test(connection):
   
 
 def tryConnection(socket, openDevices):
-	try:
-		deviceIP = openDevices[0]
-		print("Attempting to connect to", deviceIp, PORT)
-		socket.connect((deviceIP, PORT))
-	except:
-		print("Trying to connect to ", deviceIP)
+	while True:
+		try:
+			deviceIP = openDevices[0]
+			socket.connect((deviceIP, PORT))
+		except:
+			print("Trying to connect to ", deviceIP)
 
 def __main__():
 
@@ -26,6 +26,7 @@ def __main__():
 
 	if len(openDevices) == 0:
 		print("NO DEVICES FOUND")
+		sys.exit(1)
 
 	#Set up my listener socket
 	mainSock = socket.socket()	
