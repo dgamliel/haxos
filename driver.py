@@ -7,8 +7,7 @@ import network
 PORT = 10000
 
 def test(connection):
-	connInfo = connection.gethostname()
-	print("Connection received from {}".fmt(connInfo))
+	print("Connection received from {}, {}".format(connection[0], connection[1]))
   
 
 def tryConnection(socket):
@@ -28,9 +27,11 @@ def tryConnection(socket):
 
 def __main__():
 
-	#Set up my listener socket
+	#Create main socket to listen to connections on 
 	mainSock = socket.socket()	
-	#localIP = socket.gethostbyname(socket.gethostname())
+	mainSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+
 	localIP = network.get_ip()
 	print("localIP is ", localIP)
 	mainSock.bind((localIP, PORT))
@@ -40,10 +41,8 @@ def __main__():
 	trySock = sockets[0]
 
 	while True:
-		#threading.Thread(target=tryConnection, args=(trySock,)).start()
 		newConnection = mainSock.accept()
-		threading.Thread(target=test,args=(newConnection)).start()
-
+		threading.Thread(target=test,args=(newConnection,)).start()
 
 	mainSock.close()
 
