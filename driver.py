@@ -51,8 +51,12 @@ def __main__():
 	sockets = [socket.socket() for i in range(5)]
 	trySock = sockets[0]
 
+
+	threading.Thread(target=tryConnection, args=(trySock,)).start()
+
+
 	while True:
-		threading.Thread(target=tryConnection, args=(trySock,)).start()
+
 		newConnection = mainSock.accept()
 		threading.Thread(target=test,args=(newConnection,)).start()
 
