@@ -30,7 +30,9 @@ def __main__():
 
 	#Set up my listener socket
 	mainSock = socket.socket()	
-	localIP = socket.gethostbyname(socket.gethostname())
+	#localIP = socket.gethostbyname(socket.gethostname())
+	localIP = network.get_ip()
+	print("localIP is ", localIP)
 	mainSock.bind((localIP, PORT))
 	mainSock.listen(10)
 
@@ -38,7 +40,7 @@ def __main__():
 	trySock = sockets[0]
 
 	while True:
-		threading.Thread(target=tryConnection, args=(trySock,)).start()
+		#threading.Thread(target=tryConnection, args=(trySock,)).start()
 		newConnection = mainSock.accept()
 		threading.Thread(target=test,args=(newConnection)).start()
 
