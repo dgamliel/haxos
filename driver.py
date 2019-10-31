@@ -1,7 +1,7 @@
 import socket
 import os
 import threading
-import paxos
+#import paxos
 import network
 
 PORT   = 10000
