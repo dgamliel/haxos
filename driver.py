@@ -73,7 +73,7 @@ def __main__():
 
 	while True:
 
-		newConnection = mainSock.accept()
+		newConnection = mainSock.accept()[0]
 		threading.Thread(target=recvThread,args=(newConnection, recvQueue)).start()
 
 	mainSock.close()
