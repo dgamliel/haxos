@@ -14,6 +14,14 @@ OTHERPIS = NUMPIS-1
 recvQueue = Queue()
 
 
+def processNetworkData(msgQueue, socketList):
+	while True:
+		if not msgQueue.empty():
+			msg = msgQueue.get()	
+			print("Received message - ", msg)
+			#paxos.processNetworkData(msg)
+
+
 def recvThread(listenSock, msgQueue):
 	while True:
 		msg = listenSock.recv(1024).decode('utf-8')
