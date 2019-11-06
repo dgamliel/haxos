@@ -2,7 +2,6 @@ from boot import getPiNum
 import threading
 import json
 from JSON import jsonMsg
-#import queue
 
 
 '''
@@ -20,7 +19,6 @@ depth        = 0
 
 #Maintaining paxos data as messages come in
 acceptCountDict = {} #key=ballot, value = acceptCount
-#sendQueue       = queue.Queue()
 
 #This is what we will propose in phase II from leader
 initialVal    = None
