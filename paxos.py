@@ -1,9 +1,8 @@
-import socket
-import sys
+from boot import getPiNum
 import threading
 import json
-import queue
-import hashlib
+from JSON import jsonMsg
+#import queue
 
 
 '''
@@ -13,7 +12,7 @@ import hashlib
 # its copy of the blockchain"
 '''
 #Paxos info
-pid          = getPid(name) #TODO: Make pi number
+pid          = getPiNum()
 ballot       = [0,pid]
 acceptBallot = [0,0]
 acceptVal    = ""
@@ -21,7 +20,7 @@ depth        = 0
 
 #Maintaining paxos data as messages come in
 acceptCountDict = {} #key=ballot, value = acceptCount
-sendQueue       = queue.Queue()
+#sendQueue       = queue.Queue()
 
 #This is what we will propose in phase II from leader
 initialVal    = None
@@ -30,8 +29,6 @@ phaseTwoList  = []
 
 #Connection configuration
 #TODO: Fix for my current architecture
-serv = connector.Server(name)
-serv.connectNetwork()
 
 #Locks for concurrency
 lock = threading.Lock()
@@ -53,7 +50,7 @@ def constantlyAccept(sock):
 		sock.accept()
 
 #TODO: Rework with current architecture
-threading.Thread(target=constantlyAccept, args=(serv,)).start()
+#threading.Thread(target=constantlyAccept, args=(serv,)).start()
 
 
 #ping other servers for blockchain
@@ -85,11 +82,11 @@ def processNetworkData(msg):
 	global sendQueue
 	global transactions
 	global proposingBool
-	global depth
-	global blockChain
-	global chainList
-	global chainsRecevied
-	print('[Server %s] Received from Network: %s\n' % (name, msg))
+	#global depth
+	#global blockChain
+	#global chainList
+	#global chainsRecevied
+	#print('[Server %s] Received from Network: %s\n' % (name, msg))
 
 	#Load json msg and get state
 	_json = json.loads(msg)
@@ -138,28 +135,36 @@ def processNetworkData(msg):
 
 				src=  _json["src"]
 				_json = jsonMsg(name,src,ballot=receivedBal,blockString=acceptVal,state="ACCEPT")
-				sendQueue.put(_json)
+				#sendQueue.put(_json)
 				lock.release()
-				return
+				return _json
 
+		#TODO: Set Majority to not be 3 but variable
 		if acceptCount==3: #case (leader)
 
+			messages=[]
+
+			#Broadcast messages
 			for dest in names:
-				_json = jsonMsg(name,dest,ballot=receivedBal,blockString=receivedV,state="DECIDE")
-				sendQueue.put(_json)
-			_json = jsonMsg(name,name,ballot=receivedBal,blockString=receivedV,state="DECIDE")
-			sendQueue.put(_json)
+				_json = jsonMsg(name,dest,ballot=receivedBal,x_y_coord=receivedV,state="DECIDE")
+				messages.append(_json)
+
+			#Send message to myself
+			_json = jsonMsg(name,name,ballot=receivedBal,x_y_coord=receivedV,state="DECIDE")
+			messages.append(_json)
 
 			#remove block from transaction queue
 			#only pop if proposing own value!!!!!!!!!!
 			if(receivedV==initialVal):
-				transactions.pop(0)
-				transactions.pop(0)
+				#transactions.pop(0)
+				#transactions.pop(0)
 				ackCount = 0
 
 			#set proposing to false
 			proposingBool=False
 
+			#return the messages
+			return messages
 
 	#We have decided the value and will append the block to the blockchain
 	elif state == "DECIDE": 
@@ -237,7 +242,8 @@ def processNetworkData(msg):
 
 
 		_json = jsonMsg(name, dest, blockString, ballot=ballot, state="UPDATE")
-		sendQueue.put(_json)
+		return [_json]
+		#sendQueue.put(_json)
 
 	elif state == "UPDATE":
 
@@ -260,10 +266,21 @@ def processNetworkData(msg):
 		ackCount      = 0
 		
 		#Remove transactions from the list
+		#TODO: Consider what it means to drop an x_y_coord
+		'''
 		for i in range(2):
 			transactions.pop(0)
+		'''
 
-		serv.sendClient('Unable to complete transaction')
+		#serv.sendClient('Unable to complete transaction')
+
+	
+	elif state == "REVEAL":
+		myId = getPiNum()
+		msg  = jsonMsg(dest, src, acceptVal=myId, state="REVEAL_RESPONSE")
+
+		#Return type should be a list
+		return [msg]
 
 	lock.release()
 
@@ -293,6 +310,9 @@ def paxos():
 		ballot[0]+=1
 
 		phaseTwoList = [] #clearing the list so that previous ACKs are deleted
+
+
+		"""
 		prevHash = None
 		if depth != 0:
 			prevHash = createPrevHash(blockChain.chain[-1])
@@ -301,23 +321,20 @@ def paxos():
 		# prevHash = blockChain[-1].header.prevHash if depth != 0 else ""
 		nonce = mineBlock(depth, transactions[0], transactions[1], prevHash)
 		block = jsonBlock(transactions[0],transactions[1],depth+1,prevHash,nonce) #create the blockchain block
+		"""
+		initialVal = block #TODO: Figure out what this is supposed is supposed to be
 
-		initialVal = block
+		messages = []
 
 		for dest in names: #send to all others
 			_json = jsonMsg(name,dest,state="PREPARE",ballot=ballot)
-			sendQueue.put(_json)
+			#sendQueue.put(_json)
+			messages.append(_json)
 
 		#send to self
 		_json = jsonMsg(name,name,state="PREPARE",ballot=ballot)
-		sendQueue.put(_json)
+		messages.append(_json)
+		#sendQueue.put(_json)
 			
-
-def sendThread(conn):
-
-	global sendQueue
-	while True:
-		if not sendQueue.empty():
-			front = sendQueue.get()
-			conn.sendNetwork(front)
+		return messages
 

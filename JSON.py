@@ -9,7 +9,7 @@ def jsonMsg(src, dest, x_y_coord = "",ballot = "",acceptVal = "", acceptBallot =
         "acceptVal": acceptVal,
         "acceptBallot": acceptBallot,
         "x_y_coord": x_y_coord,
-        "state":state #prepare,accept,decide,ack,reveal
+        "state":state #prepare,accept,decide,ack,reveal, reveal_response
     }
 
     return json.dumps(_json)
