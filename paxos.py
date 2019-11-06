@@ -86,9 +86,12 @@ def processNetworkData(msg):
 	#global chainsRecevied
 	#print('[Server %s] Received from Network: %s\n' % (name, msg))
 
-	#Load json msg and get state
+	#Convert msg string to json and get its contents
 	_json = json.loads(msg)
 	state = _json["state"]
+	src  = _json["src"]
+	dest = _json["dest"]
+	#receivedBal = _json["ballot"] 
 
 	if state == "PREPARE" :
 		receivedBal = _json["ballot"]
