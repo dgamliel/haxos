@@ -1,9 +1,10 @@
 import socket
-import os
 import threading
 import paxos
 import network
-import JSON
+import boot
+import JSON            #Cusom msg formatter for JSON
+import json
 from queue import Queue
 
 
@@ -11,15 +12,33 @@ PORT   = 10000
 NUMPIS = 3
 OTHERPIS = NUMPIS-1
 
+MY_PI = boot.getPiNum()
+
 recvQueue = Queue()
+sendQueue = Queue()
+
+def mappedResponse(msg):
+	_json = json.dumps(msg)
+	
+	src = _json["src"]
+
+	#returns the sender
+	return src, msg
 
 
-def processNetworkData(msgQueue, socketList):
+def processNetworkData(recvQueue, sendQueue, socketList):
 	while True:
-		if not msgQueue.empty():
-			msg = msgQueue.get()	
+		if not recvQueue.empty():
+			msg = recvQueue.get()	
 			print("Received message - ", msg)
 			response = paxos.processNetworkData(msg)
+
+
+			#TODO: Figure out way of mapping each message to its corresponding socket to send from
+			if response is not None:
+				for res in response:
+					mappedRes = mapResponse(res) #Should be in the form (piNum, msg)
+					sendQueue.put(mappedRes)
 			
 
 """
@@ -28,10 +47,10 @@ def processNetworkData(msgQueue, socketList):
 
 	brief: Continuously listens on the socket and once received places the message in the global message queue
 """
-def recvThread(listenSock, msgQueue):
+def recvThread(listenSock, recvQueue):
 	while True:
 		msg = listenSock.recv(1024).decode('utf-8')
-		msgQueue.put(msg)	
+		recvQueue.put(msg)	
 
 
 
@@ -57,16 +76,20 @@ def bcastConnect(socketList):
 			print("Attempting to connect to", deviceIP, PORT)
 			connSock = socketList[amountConnected]				
 
+			#If we can't connect we should throw an error and retry
 			connSock.connect((deviceIP, PORT))				
 
 			#Json Message and request Pi Num
-			msg = JSON.jsonMsg(None, None, state="REVEAL").encode('utf-8')
+			src = MY_PI
+			msg = JSON.jsonMsg(src, None, state="REVEAL").encode('utf-8')
 			connSock.send(msg)
 
 			amountConnected += 1
 		except Exception as e:
 			print("EXCEPTION: ", e)
 			print("Failed to connect to pi at {}... retrying".format(deviceIP))
+
+
 
 		if amountConnected == OTHERPIS:
 			connected=True
@@ -91,7 +114,7 @@ def __main__():
 	threading.Thread(target=bcastConnect, args=(socketList,)).start()
 	
 	#Start thread that handles receives
-	threading.Thread(target=processNetworkData, args=(recvQueue, socketList)).start()
+	threading.Thread(target=processNetworkData, args=(recvQueue, sendQueue, socketList)).start()
 
 	#threading.Thread(target=sendThread, args=(sendQueue,)).start()
 	#threading.Thread(target=establishMapping, args=(piToSocketMap)).start()
