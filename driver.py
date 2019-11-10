@@ -34,7 +34,7 @@ def processNetworkData(recvQueue, sendQueue, socketMap):
 	while True:
 		if not recvQueue.empty():
 			msg = recvQueue.get()
-			print("Received message - ", msg)
+			#print("Received message - ", msg)
 			response = paxos.processNetworkData(msg)
 
 
@@ -54,8 +54,9 @@ def processNetworkData(recvQueue, sendQueue, socketMap):
 """
 def recvThread(listenSock, recvQueue, socketMap):
 	while True:
-		msg = listenSock.recv(1024).decode('utf-8')
 
+		msg = listenSock.recv(1024).decode('utf-8')
+		print("Received on recvThread: ", msg)
 		#check that message has mapping, if not, we map in socketMapping
 		_json = json.loads(msg)
 		messageSender = int(_json["src"])
