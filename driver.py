@@ -17,8 +17,8 @@ MY_PI = boot.getPiNum()
 recvQueue = Queue()
 sendQueue = Queue()
 
-def mappedResponse(msg):
-	_json = json.dumps(msg)
+def mapResponse(msg):
+	_json = json.loads(msg)
 	
 	src = _json["src"]
 
