@@ -34,31 +34,60 @@ def processNetworkData(recvQueue, sendQueue, socketMap):
 	while True:
 		if not recvQueue.empty():
 			msg = recvQueue.get()
-			#print("Received message - ", msg)
+
 			response = paxos.processNetworkData(msg)
 
+			print("Paxos Response" , response)
 
 			#Assumption: each message has already been mapped in recvThread
 			if response is not None:
 				for res in response:
 					mappedRes = mapResponse(res) #Should be in the form (piNum, msg)
-
 					sendQueue.put(mappedRes)
 			
 
-"""
+
+
+def sendThread(sendQueue, socketMap):
+
+	"""
+	param1 sendQueue: queue that contains global list of messages from all queues
+	param2 socketMap: mapping of all piNumbers to their corresponding sockets
+
+	Brief: Listens in on global queue of messages to be sent, maps the message to the correct socket and sends it
+	"""
+
+	print("sendQueue started!")
+	while not sendQueue.empty():
+		print("SENDING!")
+		dest, msg = sendQueue.get()
+
+		sendToSock = socketMap[dest]
+
+		print("sending to", dest, "msg", msg)
+
+		sendToSock.send(msg.encode('utf-8'))
+
+
+
+def recvThread(listenSock, recvQueue, socketMap):
+
+	"""
 	param1 listenSock: socket that should be continously listened on
 	param2 msgQueue:   global queue that is shared between sockets that will contain all messages received on the process
 
 	brief: Continuously listens on the socket and once received places the message in the global message queue
-"""
-def recvThread(listenSock, recvQueue, socketMap):
+	"""
+
+
 	while True:
 
 		msg = listenSock.recv(1024).decode('utf-8')
-		print("Received on recvThread: ", msg)
+
 		#check that message has mapping, if not, we map in socketMapping
+
 		_json = json.loads(msg)
+
 		messageSender = int(_json["src"])
 
 		if messageSender not in socketMap.keys():
@@ -67,28 +96,14 @@ def recvThread(listenSock, recvQueue, socketMap):
 		recvQueue.put(msg)	
 
 
-"""
-	param1 sendQueue: queue that contains global list of messages from all queues
-	param2 socketMap: mapping of all piNumbers to their corresponding sockets
-
-	Brief: Listens in on global queue of messages to be sent, maps the message to the correct socket and sends it
-"""
-def sendThread(sendQueue, socketMap):
-	while not sendQueue.empty():
-		dest, msg = sendQueue.get()
-
-		sendToSock = socketMap[dest]
-		sendToSock.send(msg.encode('utf-8'))
-
-
-"""
+def bcastConnect(socketList):
+	"""
 	param1 socketList: list of uninitialized sockets to call connect on some IP
 
 	brief: Continuously listens on the socket and once received places the message in the global message queue
 
 	Assumptions: Other procs listening for connections
-"""
-def bcastConnect(socketList):
+	"""
 
 	connected=False
 	amountConnected = 0
@@ -146,7 +161,7 @@ def __main__():
 	#Start thread that handles receives
 	threading.Thread(target=processNetworkData, args=(recvQueue, sendQueue, socketMap)).start()
 
-	#threading.Thread(target=sendThread, args=(sendQueue,)).start()
+	threading.Thread(target=sendThread, args=(sendQueue,socketMap)).start()
 	#threading.Thread(target=establishMapping, args=(piToSocketMap)).start()
 
 	while True:
