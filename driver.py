@@ -37,7 +37,7 @@ def processNetworkData(recvQueue, sendQueue, socketMap):
 
 			response = paxos.processNetworkData(msg)
 
-			print("Paxos Response" , response)
+			#print("Paxos Response" , response)
 
 			#Assumption: each message has already been mapped in recvThread
 			if response is not None:
@@ -92,6 +92,7 @@ def recvThread(listenSock, recvQueue, socketMap):
 
 		if messageSender not in socketMap.keys():
 			socketMap[messageSender] = listenSock
+			print("New pi added to map", socketMap)
 
 		recvQueue.put(msg)	
 
@@ -139,7 +140,10 @@ def bcastConnect(socketList):
 		if amountConnected == OTHERPIS:
 			connected=True
 
+
+	
 	print("ALL CONNECTIONS ACHIEVED")
+	print("Socket map", socketMap)
 
 def __main__():
 
