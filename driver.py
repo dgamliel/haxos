@@ -30,7 +30,7 @@ def mapResponse(msg):
 	src = _json["src"]
 
 	#returns the sender
-	return src, msg
+	return src, msg.encode('utf-8')
 
 
 def processNetworkData(recvQueue, sendQueue, socketMap):
@@ -146,8 +146,7 @@ def bcastConnect(socketList):
 			#Json Message and request Pi Num
 			src = MY_PI
 			msg = JSON.jsonMsg(src, None, state="REVEAL").encode('utf-8')
-			#connSock.send(msg)
-			sendQueue.put(msg)
+			connSock.send(msg)
 
 			
 
@@ -162,7 +161,7 @@ def bcastConnect(socketList):
 			connected=True
 			initMsgs = paxos.paxos(pVals)
 			for msg in initMsgs:
-				sendQueue.put(msg)
+				sendQueue.put(msg.encode('utf-8'))
 
 	
 	print("ALL CONNECTIONS ACHIEVED")
