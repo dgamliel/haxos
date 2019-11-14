@@ -325,7 +325,6 @@ def processNetworkData(pVals,msg):
 
 	
 	elif state == "REVEAL":
-		print("PROCESSING REVEAL STATUS")
 		myId = getPiNum()
 		msg  = jsonMsg(myId, src, acceptVal=None, state="REVEAL_RESPONSE")
 

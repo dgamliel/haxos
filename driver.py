@@ -52,10 +52,11 @@ def processNetworkData(recvQueue, sendQueue, socketMap):
 					sendQueue.put(mappedRes)
 			
 
+			else:
+				print("RESPONSE IS", response)
 
-
-def sendThread(sendQueue, socketMap):
-
+#def sendThread(sendQueue, socketMap):
+def sendThread(socketMap):
 	"""
 	param1 sendQueue: queue that contains global list of messages from all queues
 	param2 socketMap: mapping of all piNumbers to their corresponding sockets
@@ -63,16 +64,29 @@ def sendThread(sendQueue, socketMap):
 	Brief: Listens in on global queue of messages to be sent, maps the message to the correct socket and sends it
 	"""
 
-	print("sendQueue started!")
-	while not sendQueue.empty():
-		print("SENDING!")
-		dest, msg = sendQueue.get()
+	global sendQueue
 
-		sendToSock = socketMap[dest]
+	while True:
+		if not sendQueue.empty():
 
-		print("sending to", dest, "msg", msg)
+			mapped = False #Assume upon each send that our message is not mapped
 
-		sendToSock.send(msg.encode('utf-8'))
+			received = sendQueue.get()
+			print("driver.py: Line 75",received)
+
+			dest, msg = received
+			dest = int(dest)
+
+			while not mapped:
+				try:
+					sendToSock = socketMap[dest]
+					mapped = True
+				except:
+					pass
+
+			print("sending to", dest, "msg", msg)
+
+			sendToSock.send(msg.encode('utf-8'))
 
 
 
@@ -132,7 +146,8 @@ def bcastConnect(socketList):
 			#Json Message and request Pi Num
 			src = MY_PI
 			msg = JSON.jsonMsg(src, None, state="REVEAL").encode('utf-8')
-			connSock.send(msg)
+			#connSock.send(msg)
+			sendQueue.put(msg)
 
 			
 
@@ -173,8 +188,8 @@ def __main__():
 	#Start thread that handles receives
 	threading.Thread(target=processNetworkData, args=(recvQueue, sendQueue, socketMap)).start()
 
-	threading.Thread(target=sendThread, args=(sendQueue,socketMap)).start()
-	#threading.Thread(target=establishMapping, args=(piToSocketMap)).start()
+	#threading.Thread(target=sendThread, args=(sendQueue,socketMap)).start()
+	threading.Thread(target=sendThread, args=(socketMap,)).start()
 
 	while True:
 
