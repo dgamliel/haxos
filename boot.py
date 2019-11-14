@@ -8,5 +8,5 @@ def getPiNum():
     config.read('config.ini')
 
     piNum = config['piNum']['number']
-    return piNum
+    return int(piNum)
 

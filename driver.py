@@ -27,10 +27,13 @@ socketMap = {}
 def mapResponse(msg):
 	_json = json.loads(msg)
 	
+	STATE = _json["state"]
 	src = _json["src"]
+	dest = _json["dest"]
 
-	#returns the sender
-	return src, msg.encode('utf-8')
+	if STATE == "REVEAL":
+		return src, msg
+	return dest, msg
 
 
 def processNetworkData(recvQueue, sendQueue, socketMap):
@@ -43,17 +46,11 @@ def processNetworkData(recvQueue, sendQueue, socketMap):
 
 			response = paxos.processNetworkData(pVals,msg)
 
-			print("Paxos Response" , response)
-
 			#Assumption: each message has already been mapped in recvThread
 			if response is not None:
 				for res in response:
 					mappedRes = mapResponse(res) #Should be in the form (piNum, msg)
 					sendQueue.put(mappedRes)
-			
-
-			else:
-				print("RESPONSE IS", response)
 
 #def sendThread(sendQueue, socketMap):
 def sendThread(socketMap):
@@ -71,22 +68,26 @@ def sendThread(socketMap):
 
 			mapped = False #Assume upon each send that our message is not mapped
 
-			received = sendQueue.get()
-			print("driver.py: Line 75",received)
+			toSend = sendQueue.get()
+			print("sendThread:69 - Sending", toSend)
 
-			dest, msg = received
+			dest, msg = toSend
 			dest = int(dest)
 
-			while not mapped:
-				try:
+			print("dest", dest, "mypi", MY_PI)
+
+			if dest != MY_PI:
+				print("sending to", dest, "msg", msg)
+
+
+				while not mapped:
 					sendToSock = socketMap[dest]
 					mapped = True
-				except:
-					pass
 
-			print("sending to", dest, "msg", msg)
 
-			sendToSock.send(msg.encode('utf-8'))
+
+
+				sendToSock.send(msg.encode('utf-8'))
 
 
 
@@ -112,7 +113,7 @@ def recvThread(listenSock, recvQueue, socketMap):
 
 		if messageSender not in socketMap.keys():
 			socketMap[messageSender] = listenSock
-			print("New pi added to map", socketMap)
+			#print("New pi added to map", socketMap)
 
 		recvQueue.put(msg)	
 
@@ -148,8 +149,6 @@ def bcastConnect(socketList):
 			msg = JSON.jsonMsg(src, None, state="REVEAL").encode('utf-8')
 			connSock.send(msg)
 
-			
-
 			amountConnected += 1
 		except Exception as e:
 			print("EXCEPTION: ", e)
@@ -160,12 +159,13 @@ def bcastConnect(socketList):
 		if amountConnected == OTHERPIS:
 			connected=True
 			initMsgs = paxos.paxos(pVals)
+			print("initMsgs to send", initMsgs)
 			for msg in initMsgs:
-				sendQueue.put(msg.encode('utf-8'))
+				dest, msg = mapResponse(msg)
+				sendQueue.put((dest,msg))
 
 	
 	print("ALL CONNECTIONS ACHIEVED")
-	print("Socket map", socketMap)
 
 def __main__():
 

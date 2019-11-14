@@ -375,7 +375,7 @@ def paxos(pVals):
 
 		messages = []
 
-		for i in range(NUMPIS): #send to all others
+		for i in range(1, NUMPIS+1): #send to all others
 			dest = i
 			_json = jsonMsg(pid,dest,state="PREPARE",ballot=ballot)
 			#sendQueue.put(_json)
