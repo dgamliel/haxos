@@ -1,8 +1,8 @@
-from boot import getPiNum
-import threading
-import json
-from JSON import jsonMsg
-
+from boot import getPiNum #Get ID
+import threading          #Concurrency control     
+import json               #Strings to JSON objects, etc
+from JSON import jsonMsg  #Craft Json MSG's
+from math import ceil     #Used to determine majority
 
 '''
 # ballot = <Num, pid, depth of block>
@@ -10,6 +10,16 @@ from JSON import jsonMsg
 # if the depth of the block being proposed is lower than the acceptor’s depth of
 # its copy of the blockchain"
 '''
+
+'''
+class PaxosValues():
+	
+	def __init__(self):
+'''
+
+NUMPIS = 3
+OTHERPIS = NUMPIS-1
+
 #Paxos info
 pid          = getPiNum()
 ballot       = [0,pid]
@@ -23,16 +33,35 @@ acceptCountDict = {} #key=ballot, value = acceptCount
 #This is what we will propose in phase II from leader
 initialVal    = None
 proposingBool = False
-phaseTwoList  = []
 
-#Connection configuration
-#TODO: Fix for my current architecture
+class paxosValues:
+	def __init__(self):
+
+		#Paxos info
+		self.pid          = getPiNum()
+		self.ballot       = [0,pid]
+		self.acceptBallot = [0,0]
+		self.acceptVal    = ""
+		self.depth        = 0
+
+		#Maintaining paxos data as messages come in
+		self.acceptCountDict = {} #key=ballot, value = acceptCount
+
+		#This is what we will propose in phase II from leader
+		self.initialVal    = None
+		self.proposingBool = False
+
+		#For timeouts
+		self.ackCount = 0
+
+		self.phaseTwoList = []
+
+
 
 #Locks for concurrency
 lock = threading.Lock()
 
-#For timeouts
-ackCount = 0
+
 
 def startTimer():
 	#After 5 seconds
@@ -42,32 +71,35 @@ def startTimer():
 		abortMsg = jsonMsg(name, name, state="ABORT")
 		sendQueue.put(abortMsg)
 
-#TODO: Rework with current architecture
+#NOTE: DEPRECATED... NOT NEEDED
+"""
 def constantlyAccept(sock):
 	while True:
 		sock.accept()
-
-#TODO: Rework with current architecture
-#threading.Thread(target=constantlyAccept, args=(serv,)).start()
+"""
 
 
 #ping other servers for blockchain
+#NOTE: Deprecated
+"""
 def requestUpdate():
 	for dest in names: #send to all others
 		_json = jsonMsg(name,dest,state="PING")
 		sendQueue.put(_json)
+"""
 
-#TODO: Rework for current processes 
+#NOTE: DEPRECATED
+"""
 def listenNetwork(conn):
 	while True:
 		msg = conn.networkRecv()
 		for jsonD in msg:
 			if jsonD!="":
 				threading.Thread(target=processNetworkData, args=(jsonD,)).start()
-				
+"""
 
 #TODO: Rework for current architecture
-def processNetworkData(msg):
+def processNetworkData(pVals,msg):
 	global lock
 	lock.acquire()
 
@@ -80,6 +112,7 @@ def processNetworkData(msg):
 	global sendQueue
 	global transactions
 	global proposingBool
+
 	#global depth
 	#global blockChain
 	#global chainList
@@ -97,12 +130,11 @@ def processNetworkData(msg):
 		receivedBal = _json["ballot"]
 
 		#Cannot accept smaller ballots in the future
-		if receivedBal >= ballot:
-			ballot[0] = receivedBal[0]
+		if receivedBal >= pVals.ballot:
+			pVals.ballot[0] = receivedBal[0]
 			dest = _json["src"]
-			_json = jsonMsg(name,dest,state="ACK",ballot = receivedBal,acceptBallot=acceptBallot,acceptVal=acceptVal)	
+			_json = jsonMsg(name,dest,state="ACK", ballot = receivedBal, acceptBallot=acceptBallot,acceptVal= pVals.acceptVal)	
 			sendQueue.put(_json)
-
 
 
 		#If bal smaller than myBal --> Don't respond
@@ -113,18 +145,20 @@ def processNetworkData(msg):
 	elif state == "ACCEPT":
 
 		receivedBal = _json["ballot"]
-		receivedV = _json["blockString"]
+		#TODO:Received val should be x_y_coord
+		receivedV = _json["x_y_coord"]
 		
 		#Check if we received the ballot before
 		#if first time receiving ballot --> set ballot count to 1
 		#else --> increment ballot count
-		if str(receivedBal) not in acceptCountDict.keys():
-			acceptCountDict[str(receivedBal)] = 1
+		if str(receivedBal) not in pVals.acceptCountDict.keys():
+			pVals.acceptCountDict[str(receivedBal)] = 1
 
 		else:
-			acceptCountDict[str(receivedBal)] += 1
+			pVals.acceptCountDict[str(receivedBal)] += 1
 
-		acceptCount = acceptCountDict[str(receivedBal)]
+		#Grab the accept count
+		acceptCount = pVals.acceptCountDict[str(receivedBal)]
 
 		if acceptCount == 1: #case (not leader)
 
@@ -138,10 +172,11 @@ def processNetworkData(msg):
 				_json = jsonMsg(name,src,ballot=receivedBal,blockString=acceptVal,state="ACCEPT")
 				#sendQueue.put(_json)
 				lock.release()
-				return _json
+				return [_json]
 
 		#TODO: Set Majority to not be 3 but variable
 		if acceptCount==3: #case (leader)
+		#if acceptCount == pVals.majority
 
 			messages=[]
 
@@ -156,9 +191,7 @@ def processNetworkData(msg):
 
 			#remove block from transaction queue
 			#only pop if proposing own value!!!!!!!!!!
-			if(receivedV==initialVal):
-				#transactions.pop(0)
-				#transactions.pop(0)
+			if receivedV == pVals.initialVal:
 				ackCount = 0
 
 			#set proposing to false
@@ -170,32 +203,39 @@ def processNetworkData(msg):
 	#We have decided the value and will append the block to the blockchain
 	elif state == "DECIDE": 
 
+		x_y_coord = _json["x_y_coord"]
+
 		# _variable indicates variable from the received JSON
-		_blockString = _json["blockString"]
+		#_blockString = _json["blockString"]
 
 		#convert the string to a json object that has the block data
-		_block = json.loads(_blockString)
-		_depth = int(_block["blockDepth"])
+		#_block = json.loads(_blockString)
+		#_depth = int(_block["blockDepth"])
 
+	
+		"""
+		TODO: Configure for x_y_coordinate
 		if _depth<=depth:
 			#already recieved this block!!!!
 			#IGNORE THAT MF THANG
 			print("Ignoring repeated block")
+		"""
 
 
-			# #reset paxos vals for next round
-			proposingBool = False
-			acceptBallot = [0,0]
-			acceptVal = ""
-			ackCount = 0
-			#call paxos to see if it should run
-			paxos()
+		# #reset paxos vals for next round
+		pVals.proposingBool = False
+		pVals.acceptBallot = [0,0]
+		pVals.acceptVal = ""
+		pVals.ackCount = 0
+		#call paxos to see if it should run
+		paxos(pVals)
 
-
+		
 
 	elif state == "ACK":
-		ackCount += 1
-		if ackCount == 2:
+		pVals.ackCount += 1
+
+		if pVals.ackCount == 2:
 			threading.Thread(target=startTimer, args=()).start()
 
 		#Received from acceptor phase I --> leader phase II
@@ -204,20 +244,23 @@ def processNetworkData(msg):
 
 		#acceptPair <-- acceptBallot , acceptval
 		acceptPair = [receivedBal,receivedVal]
-		phaseTwoList.append(acceptPair)
+		pVals.phaseTwoList.append(acceptPair)
 
 		#Received from majority
-		if len(phaseTwoList)==3:
+		#if len
+		if len(pVals.phaseTwoList)==3:
 
 			#Vars to hold highest ballot and checking flags
 			myValChosen = True
 			highestBal = [-1,-1]
+
+			#Init myVal to be none to be sent out soon
 			myVal = None
 
 			for pair in phaseTwoList:
 				#case acceptor node has accepted value
 				pairVal = pair[1]
-				if(pairVal!=""):
+				if pairVal != "":
 					myValChosen = False #We were not accepted as the leader. Need to restart
 
 				#find highestBallot
@@ -227,7 +270,7 @@ def processNetworkData(msg):
 					myVal = pairVal
 
 			if myValChosen == True:
-				myVal = initialVal
+				myVal = pVals.initialVal
 
 
 			#send accept, ballot,myVal to all
@@ -249,15 +292,17 @@ def processNetworkData(msg):
 	elif state == "UPDATE":
 
 		theirBallot = _json["ballot"]
-		if theirBallot[0] > ballot[0]:
-			ballot[0] = theirBallot[0]
+		if theirBallot[0] > pVals.ballot[0]:
+			pVals.ballot[0] = theirBallot[0]
 
+		"""
 		_block = stringToBlock(_json["blockString"])
 		_depth = _block.header.blockDepth
 		if _depth-depth==1:
 				# print(_block)
 				depth= _depth
 				blockChain.add(_block)
+		"""
 
 	elif state == "ABORT":
 		#Reset paxos values
@@ -267,18 +312,22 @@ def processNetworkData(msg):
 		ackCount      = 0
 		
 		#Remove transactions from the list
-		#TODO: Consider what it means to drop an x_y_coord
+		#NOTE: Consider what it means to drop an x_y_coord
 		'''
 		for i in range(2):
 			transactions.pop(0)
 		'''
 
+		#Drop the values from the paxos class
+		return None
+
 		#serv.sendClient('Unable to complete transaction')
 
 	
 	elif state == "REVEAL":
+		print("PROCESSING REVEAL STATUS")
 		myId = getPiNum()
-		msg  = jsonMsg(dest, src, acceptVal=myId, state="REVEAL_RESPONSE")
+		msg  = jsonMsg(myId, src, acceptVal=None, state="REVEAL_RESPONSE")
 
 		#Return type should be a list
 		return [msg]
@@ -286,31 +335,28 @@ def processNetworkData(msg):
 	lock.release()
 
 
-def paxos():
+	#global phaseTwoList
+def paxos(pVals):
 	
 	global transactions
 	global ballot
-	global phaseTwoList
 	global initialVal
 	global acceptCountDict
 	global sendQueue
 	global proposingBool
+
 	#Ready to add to blockchain if len>2 and not already trying to propose a block
-	if(len(transactions)>=2 and not proposingBool):
-		if not blockChain.verifyTransactions(transactions[0], transactions[1]):
-			transactions.pop()
-			transactions.pop()
-			serv.sendClient("Invalid Transaction")
-			return
+	if not proposingBool:
+
 		#reset paxos vals for next round
-		acceptBallot = [0,0]
-		acceptVal = ""
+		pVals.acceptBallot = [0,0]
+		pVals.acceptVal = ""
 		# acceptCountDict = {}
 
-		proposingBool = True #set the flag so can't call paxos again
-		ballot[0]+=1
+		pVals.proposingBool = True #set the flag so can't call paxos again
+		pVals.ballot[0]+=1
 
-		phaseTwoList = [] #clearing the list so that previous ACKs are deleted
+		#phaseTwoList = [] #clearing the list so that previous ACKs are deleted
 
 
 		"""
@@ -323,19 +369,25 @@ def paxos():
 		nonce = mineBlock(depth, transactions[0], transactions[1], prevHash)
 		block = jsonBlock(transactions[0],transactions[1],depth+1,prevHash,nonce) #create the blockchain block
 		"""
-		initialVal = block #TODO: Figure out what this is supposed is supposed to be
+
+		
+
+		initialVal = 'AAAAAAAAAAAA' #TODO: Figure out what this is supposed is supposed to be
 
 		messages = []
 
-		for dest in names: #send to all others
-			_json = jsonMsg(name,dest,state="PREPARE",ballot=ballot)
+		for i in range(NUMPIS): #send to all others
+			dest = i
+			_json = jsonMsg(pid,dest,state="PREPARE",ballot=ballot)
 			#sendQueue.put(_json)
 			messages.append(_json)
 
+		"""
 		#send to self
 		_json = jsonMsg(name,name,state="PREPARE",ballot=ballot)
 		messages.append(_json)
 		#sendQueue.put(_json)
-			
+		"""
+
 		return messages
 

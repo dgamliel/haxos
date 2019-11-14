@@ -19,6 +19,9 @@ MY_PI = boot.getPiNum()
 recvQueue = Queue()
 sendQueue = Queue()
 
+pVals = paxos.paxosValues()
+
+
 socketMap = {}
 
 def mapResponse(msg):
@@ -31,13 +34,16 @@ def mapResponse(msg):
 
 
 def processNetworkData(recvQueue, sendQueue, socketMap):
+
+	pVals = paxos.paxosValues()
+
 	while True:
 		if not recvQueue.empty():
 			msg = recvQueue.get()
 
-			response = paxos.processNetworkData(msg)
+			response = paxos.processNetworkData(pVals,msg)
 
-			#print("Paxos Response" , response)
+			print("Paxos Response" , response)
 
 			#Assumption: each message has already been mapped in recvThread
 			if response is not None:
@@ -139,7 +145,9 @@ def bcastConnect(socketList):
 
 		if amountConnected == OTHERPIS:
 			connected=True
-
+			initMsgs = paxos.paxos(pVals)
+			for msg in initMsgs:
+				sendQueue.put(msg)
 
 	
 	print("ALL CONNECTIONS ACHIEVED")
