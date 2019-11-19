@@ -56,6 +56,7 @@ class paxosValues:
 
 		self.phaseTwoList = []
 
+		self.TOTAL_PIS_CONNECTED = 0
 
 
 #Locks for concurrency
@@ -71,32 +72,7 @@ def startTimer():
 		abortMsg = jsonMsg(name, name, state="ABORT")
 		sendQueue.put(abortMsg)
 
-#NOTE: DEPRECATED... NOT NEEDED
-"""
-def constantlyAccept(sock):
-	while True:
-		sock.accept()
-"""
 
-
-#ping other servers for blockchain
-#NOTE: Deprecated
-"""
-def requestUpdate():
-	for dest in names: #send to all others
-		_json = jsonMsg(name,dest,state="PING")
-		sendQueue.put(_json)
-"""
-
-#NOTE: DEPRECATED
-"""
-def listenNetwork(conn):
-	while True:
-		msg = conn.networkRecv()
-		for jsonD in msg:
-			if jsonD!="":
-				threading.Thread(target=processNetworkData, args=(jsonD,)).start()
-"""
 
 #TODO: Rework for current architecture
 def processNetworkData(pVals,msg):
@@ -112,12 +88,6 @@ def processNetworkData(pVals,msg):
 	global sendQueue
 	global transactions
 	global proposingBool
-
-	#global depth
-	#global blockChain
-	#global chainList
-	#global chainsRecevied
-	#print('[Server %s] Received from Network: %s\n' % (name, msg))
 
 	#Convert msg string to json and get its contents
 	_json = json.loads(msg)
@@ -331,6 +301,9 @@ def processNetworkData(pVals,msg):
 		#Return type should be a list
 		return [msg]
 
+	elif state == "ALL_CONNECTED":
+		pVals.TOTAL_PIS_CONNECTED += 1
+
 	lock.release()
 
 
@@ -355,7 +328,7 @@ def paxos(pVals):
 		pVals.proposingBool = True #set the flag so can't call paxos again
 		pVals.ballot[0]+=1
 
-		#phaseTwoList = [] #clearing the list so that previous ACKs are deleted
+		pVals.phaseTwoList = [] #clearing the list so that previous ACKs are deleted
 
 
 		"""
@@ -378,14 +351,12 @@ def paxos(pVals):
 		for i in range(1, NUMPIS+1): #send to all others
 			dest = i
 			_json = jsonMsg(pid,dest,state="PREPARE",ballot=ballot)
-			#sendQueue.put(_json)
-			messages.append(_json)
+			messages.append((i,_json))
 
 		"""
 		#send to self
 		_json = jsonMsg(name,name,state="PREPARE",ballot=ballot)
-		messages.append(_json)
-		#sendQueue.put(_json)
+		sendQueue.put(_json)
 		"""
 
 		return messages

@@ -11,6 +11,7 @@ from queue import Queue
 PORT   = 10000
 NUMPIS = 3
 OTHERPIS = NUMPIS-1
+TOTAL_PIS_CONNECTED = 0
 
 #ID of each PI
 MY_PI = boot.getPiNum()
@@ -78,11 +79,9 @@ def sendThread(socketMap):
 
 			#Busy wait until we map the socket we want to send to
 			while not mapped:
-				try:
-					sendToSock = socketMap[dest]
-					mapped = True
-				except:
-					pass
+				sendToSock = socketMap[dest]
+				mapped = True
+
 
 			sendToSock.send(msg.encode('utf-8'))
 
@@ -124,6 +123,7 @@ def bcastConnect(socketList):
 	Assumptions: Other procs listening for connections
 	"""
 
+	sendingRepeated=False #This is to check we don't send multiple all connected msgs
 	connected=False
 	amountConnected = 0
 
@@ -153,15 +153,22 @@ def bcastConnect(socketList):
 
 
 
-		if amountConnected == OTHERPIS:
-			connected=True
-			initMsgs = paxos.paxos(pVals)
-			for msg in initMsgs:
-				dest, msg = mapResponse(msg)
-				sendQueue.put((dest,msg))
+		if amountConnected == OTHERPIS and not sendingRepeated:
+			sendingRepeated = True
 
+			for i in range(1, NUMPIS+1):
+				allConnectedMsg = JSON.jsonMsg(MY_PI, i, state="ALL_CONNECTED")
+				sendQueue.put((i,allConnectedMsg))
+
+	#After ensuring all pis are connected then we start paxos
+	while not pVals.TOTAL_PIS_CONNECTED == NUMPIS:
+		pass
+
+	startPaxosMsgs = paxos.paxos(pVals)	
+	for msg in startPaxosMsgs:
+		sendQueue.put(msg)
 	
-	print("ALL CONNECTIONS ACHIEVED")
+
 
 def __main__():
 
