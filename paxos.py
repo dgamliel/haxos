@@ -156,7 +156,8 @@ def processNetworkData(pVals,msg):
 				messages.append(_json)
 
 			#Send message to myself
-			_json = jsonMsg(name,name,ballot=receivedBal,x_y_coord=receivedV,state="DECIDE")
+			#TODO: MODIFY VALUES SO THAT WE CAN FIGURE OUT WHEN TO DECIDE
+			#_json = jsonMsg(name,name,ballot=receivedBal,x_y_coord=receivedV,state="DECIDE")
 			messages.append(_json)
 
 			#remove block from transaction queue
@@ -190,6 +191,8 @@ def processNetworkData(pVals,msg):
 			#IGNORE THAT MF THANG
 			print("Ignoring repeated block")
 		"""
+
+		#TODO: Write to file containing paxos values
 
 
 		# #reset paxos vals for next round
@@ -304,6 +307,7 @@ def processNetworkData(pVals,msg):
 	elif state == "ALL_CONNECTED":
 		pVals.TOTAL_PIS_CONNECTED += 1
 
+
 	lock.release()
 
 
@@ -350,8 +354,9 @@ def paxos(pVals):
 
 		for i in range(1, NUMPIS+1): #send to all others
 			dest = i
-			_json = jsonMsg(pid,dest,state="PREPARE",ballot=ballot)
-			messages.append((i,_json))
+			if i != pid:
+				_json = jsonMsg(pid,dest,state="PREPARE",ballot=ballot)
+				messages.append((i,_json))
 
 		"""
 		#send to self

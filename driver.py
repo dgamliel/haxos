@@ -74,6 +74,7 @@ def sendThread(socketMap):
 			dest, msg = toSend
 			dest = int(dest)
 
+			print("dest", dest, "msg", msg)
 
 			print("sending to", dest, "msg", msg)
 
@@ -157,13 +158,15 @@ def bcastConnect(socketList):
 			sendingRepeated = True
 
 			for i in range(1, NUMPIS+1):
-				allConnectedMsg = JSON.jsonMsg(MY_PI, i, state="ALL_CONNECTED")
-				sendQueue.put((i,allConnectedMsg))
+				if i != MY_PI:
+					allConnectedMsg = JSON.jsonMsg(MY_PI, i, state="ALL_CONNECTED")
+					sendQueue.put((i,allConnectedMsg))
 
 	#After ensuring all pis are connected then we start paxos
 	while not pVals.TOTAL_PIS_CONNECTED == NUMPIS:
 		pass
 
+	print("INITIATING PAXOS")
 	startPaxosMsgs = paxos.paxos(pVals)	
 	for msg in startPaxosMsgs:
 		sendQueue.put(msg)
