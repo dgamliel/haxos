@@ -53,6 +53,9 @@ def processNetworkData(recvQueue, sendQueue, socketMap):
 					mappedRes = mapResponse(res) #Should be in the form (piNum, msg)
 					sendQueue.put(mappedRes)
 
+			else:
+				print("Ignoring none message!")
+
 #def sendThread(sendQueue, socketMap):
 def sendThread(socketMap):
 	"""

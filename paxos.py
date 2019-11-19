@@ -306,7 +306,7 @@ def processNetworkData(pVals,msg):
 
 	elif state == "ALL_CONNECTED":
 		pVals.TOTAL_PIS_CONNECTED += 1
-
+		return None
 
 	lock.release()
 
