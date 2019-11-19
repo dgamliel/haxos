@@ -76,12 +76,8 @@ def sendThread(socketMap):
 
 			print("dest", dest, "msg", msg)
 
-			print("sending to", dest, "msg", msg)
-
 			#Busy wait until we map the socket we want to send to
-			while not mapped:
-				sendToSock = socketMap[dest]
-				mapped = True
+			sendToSock = socketMap[dest]
 
 
 			sendToSock.send(msg.encode('utf-8'))
@@ -112,6 +108,7 @@ def recvThread(listenSock, recvQueue, socketMap):
 			socketMap[messageSender] = listenSock
 			print("New pi added to map", socketMap)
 
+		print("recv from", messageSender, "msg", msg)
 		recvQueue.put(msg)	
 
 
@@ -148,20 +145,19 @@ def bcastConnect(socketList):
 			connSock.send(msg)
 
 			amountConnected += 1
+
+			if amountConnected == OTHERPIS:
+				connected=True
+
+				for i in range(1, NUMPIS+1):
+					if i != MY_PI:
+						allConnectedMsg = JSON.jsonMsg(MY_PI, i, state="ALL_CONNECTED")
+						sendQueue.put((i,allConnectedMsg))
+
 		except Exception as e:
 			print("EXCEPTION: ", e)
 			print("Failed to connect to pi at {}... retrying".format(deviceIP))
 
-
-
-		if amountConnected == OTHERPIS and not sendingRepeated:
-			sendingRepeated = True
-			connected=True
-
-			for i in range(1, NUMPIS+1):
-				if i != MY_PI:
-					allConnectedMsg = JSON.jsonMsg(MY_PI, i, state="ALL_CONNECTED")
-					sendQueue.put((i,allConnectedMsg))
 
 	#After ensuring all pis are connected then we start paxos
 	while not pVals.TOTAL_PIS_CONNECTED == NUMPIS:
