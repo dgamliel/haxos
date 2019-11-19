@@ -69,25 +69,22 @@ def sendThread(socketMap):
 			mapped = False #Assume upon each send that our message is not mapped
 
 			toSend = sendQueue.get()
-			print("sendThread:69 - Sending", toSend)
 
 			dest, msg = toSend
 			dest = int(dest)
 
-			print("dest", dest, "mypi", MY_PI)
 
-			if dest != MY_PI:
-				print("sending to", dest, "msg", msg)
+			print("sending to", dest, "msg", msg)
 
-
-				while not mapped:
+			#Busy wait until we map the socket we want to send to
+			while not mapped:
+				try:
 					sendToSock = socketMap[dest]
 					mapped = True
+				except:
+					pass
 
-
-
-
-				sendToSock.send(msg.encode('utf-8'))
+			sendToSock.send(msg.encode('utf-8'))
 
 
 
