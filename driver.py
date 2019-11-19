@@ -28,8 +28,8 @@ def mapResponse(msg):
 	_json = json.loads(msg)
 	
 	STATE = _json["state"]
-	src = _json["src"]
-	dest = _json["dest"]
+	src   = _json["src"]
+	dest  = _json["dest"]
 
 	if STATE == "REVEAL":
 		return src, msg
@@ -159,7 +159,6 @@ def bcastConnect(socketList):
 		if amountConnected == OTHERPIS:
 			connected=True
 			initMsgs = paxos.paxos(pVals)
-			print("initMsgs to send", initMsgs)
 			for msg in initMsgs:
 				dest, msg = mapResponse(msg)
 				sendQueue.put((dest,msg))
