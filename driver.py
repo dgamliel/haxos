@@ -113,7 +113,7 @@ def recvThread(listenSock, recvQueue, socketMap):
 
 		if messageSender not in socketMap.keys():
 			socketMap[messageSender] = listenSock
-			#print("New pi added to map", socketMap)
+			print("New pi added to map", socketMap)
 
 		recvQueue.put(msg)	
 
