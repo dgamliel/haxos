@@ -156,6 +156,7 @@ def bcastConnect(socketList):
 
 		if amountConnected == OTHERPIS and not sendingRepeated:
 			sendingRepeated = True
+			connected=True
 
 			for i in range(1, NUMPIS+1):
 				if i != MY_PI:
