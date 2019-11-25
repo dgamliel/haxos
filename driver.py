@@ -44,7 +44,8 @@ def processNetworkData(recvQueue, sendQueue, socketMap):
 	while True:
 		if not recvQueue.empty():
 			msg = recvQueue.get()
-
+	
+			print("processNetworkData 48: Processing message", msg)
 			response = paxos.processNetworkData(pVals,msg)
 
 			#Assumption: each message has already been mapped in recvThread
@@ -101,16 +102,16 @@ def recvThread(listenSock, recvQueue, socketMap):
 		msg = listenSock.recv(1024).decode('utf-8')
 
 		#check that message has mapping, if not, we map in socketMapping
-
 		_json = json.loads(msg)
 
 		messageSender = int(_json["src"])
+		print("recvThread 116: from", messageSender, "msg", msg)
 
 		if messageSender not in socketMap.keys():
 			TOTAL_PIS_CONNECTED += 1
 			socketMap[messageSender] = listenSock
 
-		print("recvThread 116: from", messageSender, "msg", msg)
+
 		recvQueue.put(msg)	
 
 

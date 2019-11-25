@@ -104,7 +104,8 @@ def processNetworkData(pVals,msg):
 			pVals.ballot[0] = receivedBal[0]
 			dest = _json["src"]
 			_json = jsonMsg(name,dest,state="ACK", ballot = receivedBal, acceptBallot=acceptBallot,acceptVal= pVals.acceptVal)	
-			sendQueue.put(_json)
+			return (dest, _json)
+			#sendQueue.put(_json)
 
 
 		#If bal smaller than myBal --> Don't respond
