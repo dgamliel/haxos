@@ -77,14 +77,12 @@ def sendThread(socketMap):
 			dest, msg = toSend
 			dest = int(dest)
 
-			print("dest", dest, "msg", msg)
+			print("sendThread 80: dest", dest, "msg", msg)
 
-			#Busy wait until we map the socket we want to send to
 			sendToSock = socketMap[dest]
-
-
 			sendToSock.send(msg.encode('utf-8'))
 
+			print("sendThread 85: Sent message!")
 
 
 def recvThread(listenSock, recvQueue, socketMap):
@@ -111,9 +109,8 @@ def recvThread(listenSock, recvQueue, socketMap):
 		if messageSender not in socketMap.keys():
 			TOTAL_PIS_CONNECTED += 1
 			socketMap[messageSender] = listenSock
-			print("New pi added to map", socketMap)
 
-		print("recv from", messageSender, "msg", msg)
+		print("recvThread 116: from", messageSender, "msg", msg)
 		recvQueue.put(msg)	
 
 
@@ -168,7 +165,7 @@ def bcastConnect(socketList):
 	for msg in startPaxosMsgs:
 		sendQueue.put(msg)
 	
-
+	print("DONE WITH INITIATING")
 
 def __main__():
 
