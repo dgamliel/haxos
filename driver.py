@@ -160,8 +160,8 @@ def bcastConnect(socketList):
 
 
 	#After ensuring all pis are connected then we start paxos
-	while not pVals.TOTAL_PIS_CONNECTED == OTHERPIS:
-		pass
+	while not TOTAL_PIS_CONNECTED == OTHERPIS:
+		continue
 
 	print("INITIATING PAXOS")
 	startPaxosMsgs = paxos.paxos(pVals)	
