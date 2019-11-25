@@ -96,6 +96,7 @@ def recvThread(listenSock, recvQueue, socketMap):
 	brief: Continuously listens on the socket and once received places the message in the global message queue
 	"""
 
+	global TOTAL_PIS_CONNECTED
 
 	while True:
 
@@ -108,6 +109,7 @@ def recvThread(listenSock, recvQueue, socketMap):
 		messageSender = int(_json["src"])
 
 		if messageSender not in socketMap.keys():
+			TOTAL_PIS_CONNECTED += 1
 			socketMap[messageSender] = listenSock
 			print("New pi added to map", socketMap)
 
@@ -152,19 +154,13 @@ def bcastConnect(socketList):
 			if amountConnected == OTHERPIS:
 				connected=True
 
-				for i in range(1, NUMPIS+1):
-					if i != MY_PI:
-						print("sending all connected to ", i)
-						allConnectedMsg = JSON.jsonMsg(MY_PI, i, state="ALL_CONNECTED")
-						sendQueue.put((i,allConnectedMsg))
-
 		except Exception as e:
 			print("EXCEPTION: ", e)
 			print("Failed to connect to pi at {}... retrying".format(deviceIP))
 
 
 	#After ensuring all pis are connected then we start paxos
-	while not pVals.TOTAL_PIS_CONNECTED == NUMPIS:
+	while not pVals.TOTAL_PIS_CONNECTED == OTHERPIS:
 		pass
 
 	print("INITIATING PAXOS")
