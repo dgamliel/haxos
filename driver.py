@@ -154,6 +154,7 @@ def bcastConnect(socketList):
 
 				for i in range(1, NUMPIS+1):
 					if i != MY_PI:
+						print("sending all connected to ", i)
 						allConnectedMsg = JSON.jsonMsg(MY_PI, i, state="ALL_CONNECTED")
 						sendQueue.put((i,allConnectedMsg))
 
