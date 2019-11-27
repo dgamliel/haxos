@@ -81,6 +81,7 @@ def sendThread(socketMap):
 			print("sendThread 80: dest", dest, "msg", msg)
 
 			sendToSock = socketMap[dest]
+			print("Sending on ", sendToSock)
 			sendToSock.send(msg.encode('utf-8'))
 
 			print("sendThread 85: Sent message!")
