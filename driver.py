@@ -87,7 +87,8 @@ def sendThread(socketMap):
 			print("sendThread 85: Sent message!")
 
 
-def recvThread(listenSock, recvQueue, socketMap):
+#def recvThread(listenSock, recvQueue, socketMap):
+def recvThread(listenSock, socketMap):
 
 	"""
 	param1 listenSock: socket that should be continously listened on
@@ -97,6 +98,7 @@ def recvThread(listenSock, recvQueue, socketMap):
 	"""
 
 	global TOTAL_PIS_CONNECTED
+	global recvQueue
 
 	while True:
 
@@ -111,7 +113,6 @@ def recvThread(listenSock, recvQueue, socketMap):
 		if messageSender not in socketMap.keys():
 			TOTAL_PIS_CONNECTED += 1
 			socketMap[messageSender] = listenSock
-
 
 		recvQueue.put(msg)	
 
@@ -128,6 +129,7 @@ def bcastConnect(socketList):
 	sendingRepeated=False #This is to check we don't send multiple all connected msgs
 	connected=False
 	amountConnected = 0
+	connSock = None
 
 	while not connected:
 		openDevices = network.scanForPis()
@@ -165,7 +167,7 @@ def bcastConnect(socketList):
 	print("INITIATING PAXOS")
 	startPaxosMsgs = paxos.paxos(pVals)	
 	for msg in startPaxosMsgs:
-		sendQueue.put(msg)
+		connSock.send(msg[1].encode('utf-8'))
 	
 	print("DONE WITH INITIATING")
 
@@ -195,7 +197,9 @@ def __main__():
 	while True:
 
 		newConnection = mainSock.accept()[0]
-		threading.Thread(target=recvThread,args=(newConnection, recvQueue, socketMap)).start()
+		print("New Connection received!", newConnection)
+		#threading.Thread(target=recvThread,args=(newConnection, recvQueue, socketMap)).start()
+		threading.Thread(target=recvThread,args=(newConnection, socketMap)).start()
 
 	mainSock.close()
 
