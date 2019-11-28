@@ -104,11 +104,15 @@ def recvThread(listenSock, socketMap):
 
 		msg = listenSock.recv(1024).decode('utf-8')
 
+		print("Received message", msg)
+
 		#check that message has mapping, if not, we map in socketMapping
 		_json = json.loads(msg)
 
+
 		messageSender = int(_json["src"])
-		print("recvThread 116: from", messageSender, "msg", msg)
+		#print("recvThread 116: from", messageSender, "msg", msg)
+
 
 		if messageSender not in socketMap.keys():
 			TOTAL_PIS_CONNECTED += 1
