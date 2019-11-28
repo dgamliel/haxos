@@ -16,24 +16,16 @@ def jsonMsg(src, dest, x_y_coord = "",ballot = "",acceptVal = "", acceptBallot =
 
 def splitDualMessage(message):
 
-	splitInd = 0
+	messageList = message.split('{')
+	
+	retList = []
 
-	#Find if we received a concatenated message
-	for i in range(1, len(message)):
-		if message[i] == '{':
-			splitInd = i
-			break
+	for msg in messageList:
+		msg = '{' + msg
+		retList.append(msg)
 
-	if splitInd != 0:
-		mes1 = message[:splitInd]
-		mes2 = message[splitInd:]
+	print(retList)
+	return retList
 
-		retList = [mes1, mes2]
-		print("splitDualMessage 32: ", retList)
-		return retList 
-
-	retList = [message]
-	print("splitDualMessage 36: ", retList)
-	return [message]
 
 
