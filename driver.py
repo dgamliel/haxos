@@ -102,23 +102,23 @@ def recvThread(listenSock, socketMap):
 
 	while True:
 
-		msg = listenSock.recv(1024).decode('utf-8')
+		message = listenSock.recv(1024).decode('utf-8')
 
-		print("Received message", msg)
+		for msg in JSON.splitDualMessage(msg):
 
-		#check that message has mapping, if not, we map in socketMapping
-		_json = json.loads(msg)
-
-
-		messageSender = int(_json["src"])
-		#print("recvThread 116: from", messageSender, "msg", msg)
+			#check that message has mapping, if not, we map in socketMapping
+			_json = json.loads(msg)
 
 
-		if messageSender not in socketMap.keys():
-			TOTAL_PIS_CONNECTED += 1
-			socketMap[messageSender] = listenSock
+			messageSender = int(_json["src"])
+			#print("recvThread 116: from", messageSender, "msg", msg)
 
-		recvQueue.put(msg)	
+
+			if messageSender not in socketMap.keys():
+				TOTAL_PIS_CONNECTED += 1
+				socketMap[messageSender] = listenSock
+
+			recvQueue.put(msg)	
 
 
 def bcastConnect(socketList):

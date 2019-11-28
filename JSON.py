@@ -13,3 +13,23 @@ def jsonMsg(src, dest, x_y_coord = "",ballot = "",acceptVal = "", acceptBallot =
     }
 
     return json.dumps(_json)
+
+def splitDualMessage(message):
+
+	splitInd = 0
+
+	#Find if we received a concatenated message
+	for i in range(1, len(message)):
+		if message[i] == '{':
+			splitInd = i
+			break
+
+	if splitInd != 0:
+		mes1 = message[:splitInd]
+		mes2 = message[splitInd:]
+
+		return [mes1, mes2]
+
+	return [message]
+
+
