@@ -21,8 +21,9 @@ def splitDualMessage(message):
 	retList = []
 
 	for msg in messageList:
-		msg = '{' + msg
-		retList.append(msg)
+		if msg != '':
+			msg = '{' + msg
+			retList.append(msg)
 
 	print(retList)
 	return retList
