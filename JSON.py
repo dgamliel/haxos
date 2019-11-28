@@ -28,8 +28,12 @@ def splitDualMessage(message):
 		mes1 = message[:splitInd]
 		mes2 = message[splitInd:]
 
-		return [mes1, mes2]
+		retList = [mes1, mes2]
+		print("splitDualMessage 32: ", retList)
+		return retList 
 
+	retList = [message]
+	print("splitDualMessage 36: ", retList)
 	return [message]
 
 
