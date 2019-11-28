@@ -104,7 +104,7 @@ def recvThread(listenSock, socketMap):
 
 		message = listenSock.recv(1024).decode('utf-8')
 
-		for msg in JSON.splitDualMessage(msg):
+		for msg in JSON.splitDualMessage(message):
 
 			#check that message has mapping, if not, we map in socketMapping
 			_json = json.loads(msg)
