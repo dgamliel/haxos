@@ -1,3 +1,4 @@
+import time
 import socket
 import threading
 import paxos
@@ -185,6 +186,9 @@ def bcastConnect(socketList):
 			pass
 
 	#Json Message and request Pi Num
+
+	time.sleep(10)
+
 	src = MY_PI
 	msg = JSON.jsonMsg(src, None, state="REVEAL").encode('utf-8')
 	ipToSock[deviceIP].send(msg)
