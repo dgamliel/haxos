@@ -81,7 +81,10 @@ def sendThread(socketMap):
 
 			print("sendThread 80: dest", dest, "msg", msg)
 
-			sendToSock = socketMap[dest]
+			#Busy wait while we try to connect to the remote socket 
+			while socketMap[dest] == None:
+				continue
+
 			print("Sending on ", sendToSock)
 			sendToSock.send(msg.encode('utf-8'))
 
@@ -117,14 +120,19 @@ def recvThread(listenSock, socketMap):
 			#print("recvThread 116: from", messageSender, "msg", msg)
 
 
+			#First time we receive a message from a different process we need to map it
 			if messageSender not in socketMap.keys():
 				TOTAL_PIS_CONNECTED += 1
 
 				#Get the remote IP talking to listen port then map our send socket to that IP
-				socketMap[messageSender] = ipToSock[listenSock.getpeername()[0]]
+				ipSender = listenSock.getpeername()[0]
 				
-				
+				#If we have yet to connect to this, we just set the corresponding socket to None while we wait to connect to this port
+				if ipSender not in ipToSock.keys():
+					ipToSock[ipSender] = None
 
+				socketMap[messageSender] = ipToSock[ipSender]
+				
 				print("NEW SOCKET ADDED WITH IP", listenSock.getpeername())
 
 			recvQueue.put(msg)	
