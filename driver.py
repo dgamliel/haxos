@@ -173,6 +173,7 @@ def bcastConnect(socketList):
 			amountConnected += 1
 
 			if amountConnected == OTHERPIS:
+				TOTAL_PIS_CONNECTED += 1
 				connected=True
 
 		except Exception as e:
