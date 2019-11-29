@@ -119,7 +119,13 @@ def recvThread(listenSock, socketMap):
 
 			if messageSender not in socketMap.keys():
 				TOTAL_PIS_CONNECTED += 1
-				socketMap[messageSender] = listenSock
+
+				#Get the remote IP talking to listen port then map our send socket to that IP
+				socketMap[messageSender] = ipToSock[listenSock.getpeername()[0]]
+				
+				
+
+				print("NEW SOCKET ADDED WITH IP", listenSock.getpeername())
 
 			recvQueue.put(msg)	
 
@@ -146,19 +152,13 @@ def bcastConnect(socketList):
 		#Attempt to connect to all pis
 		try:
 			deviceIP = openDevices[amountConnected]
-			print("Attempting to connect to", deviceIP, PORT)
+			#print("Attempting to connect to", deviceIP, PORT)
 			connSock = socketList[amountConnected]				
 
 			#If we can't connect we should throw an error and retry
 			connSock.connect((deviceIP, PORT))				
 
 			ipToSock[deviceIP] = connSock
-
-			#Json Message and request Pi Num
-			src = MY_PI
-			msg = JSON.jsonMsg(src, None, state="REVEAL").encode('utf-8')
-			ipToSock[deviceIP].send(msg)
-			#connSock.send(msg)
 
 			amountConnected += 1
 
@@ -171,6 +171,11 @@ def bcastConnect(socketList):
 
 		finally:
 			pass
+
+	#Json Message and request Pi Num
+	src = MY_PI
+	msg = JSON.jsonMsg(src, None, state="REVEAL").encode('utf-8')
+	ipToSock[deviceIP].send(msg)
 
 
 	#After ensuring all pis are connected then we start paxos
@@ -210,7 +215,7 @@ def __main__():
 	while True:
 
 		newConnection = mainSock.accept()[0]
-		print("New Connection received!", newConnection)
+		print("New Connection received!", newConnection.getpeername())
 		#threading.Thread(target=recvThread,args=(newConnection, recvQueue, socketMap)).start()
 		threading.Thread(target=recvThread,args=(newConnection, socketMap)).start()
 
