@@ -148,8 +148,9 @@ def bcastConnect(socketList):
 
 	Assumptions: Other procs listening for connections
 	"""
+	global TOTAL_PIS_CONNECTED
 
-	sendingRepeated=False #This is to check we don't send multiple all connected msgs
+	#sendingRepeated=False #This is to check we don't send multiple all connected msgs
 	connected=False
 	amountConnected = 0
 	connSock = None
