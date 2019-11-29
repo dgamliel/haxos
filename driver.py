@@ -24,6 +24,7 @@ pVals = paxos.paxosValues()
 
 
 socketMap = {}
+ipToSock = {}
 
 def mapResponse(msg):
 	_json = json.loads(msg)
@@ -151,10 +152,13 @@ def bcastConnect(socketList):
 			#If we can't connect we should throw an error and retry
 			connSock.connect((deviceIP, PORT))				
 
+			ipToSock[deviceIP] = connSock
+
 			#Json Message and request Pi Num
 			src = MY_PI
 			msg = JSON.jsonMsg(src, None, state="REVEAL").encode('utf-8')
-			connSock.send(msg)
+			ipToSock[deviceIP].send(msg)
+			#connSock.send(msg)
 
 			amountConnected += 1
 
@@ -164,6 +168,9 @@ def bcastConnect(socketList):
 		except Exception as e:
 			print("EXCEPTION: ", e)
 			print("Failed to connect to pi at {}... retrying".format(deviceIP))
+
+		finally:
+			pass
 
 
 	#After ensuring all pis are connected then we start paxos
