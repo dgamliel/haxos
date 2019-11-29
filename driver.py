@@ -125,7 +125,7 @@ def recvThread(listenSock, socketMap):
 
 			#First time we receive a message from a different process we need to map it
 			if messageSender not in socketMap.keys():
-				TOTAL_PIS_CONNECTED += 1
+			
 
 				#Get the remote IP talking to listen port then map our send socket to that IP
 				ipSender = listenSock.getpeername()[0]
@@ -180,13 +180,14 @@ def bcastConnect(socketList):
 
 		except Exception as e:
 			print("EXCEPTION: ", e)
-			print("Failed to connect to pi at {}... retrying".format(deviceIP))
+			try:
+				print("Failed to connect to pi at {}... retrying".format(deviceIP))
+			except:
+				print("Failed to connect to pi ... retrying")
 
-		finally:
-			pass
 
 	#Json Message and request Pi Num
-
+	print("WAITING FOR OTHER PIS TO CONNECT")
 	time.sleep(10)
 
 	src = MY_PI
@@ -199,6 +200,7 @@ def bcastConnect(socketList):
 		continue
 
 	print("INITIATING PAXOS")
+	#TODO: FIX THIS
 	startPaxosMsgs = paxos.paxos(pVals)	
 	for msg in startPaxosMsgs:
 		connSock.send(msg[1].encode('utf-8'))
@@ -206,6 +208,8 @@ def bcastConnect(socketList):
 	print("DONE WITH INITIATING")
 
 def __main__():
+
+	global TOTAL_PIS_CONNECTED
 
 	#Create main socket to listen to connections on 
 	mainSock = socket.socket()	
