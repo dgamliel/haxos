@@ -24,6 +24,10 @@ MY_PI = boot.getPiNum()
 recvQueue = Queue()
 sendQueue = Queue()
 
+#Maps to map IP to corresponding send/recv socket
+recvMap = {}
+sendMap = {}
+
 pVals = paxos.paxosValues()
 
 #Map the IP to the socket we need to send on
@@ -31,29 +35,40 @@ socketMap = {}
 
 def connectSend(openDevices, sendSockets):
 
-	#Connect to all other pis found on the network
-	for remoteSock in range(OTHERPIS):
-		remoteIP = openDevices[remoteSock]  #open devices contains ip addresses
-		sock     = sendSockets[remoteSock]  #Grab the socket to connect
+    #Connect to all other pis found on the network
+    for remoteSock in range(OTHERPIS):
+            remoteIP = openDevices[remoteSock]  #open devices contains ip addresses
+            sock     = sendSockets[remoteSock]  #Grab the socket to connect
 
-		#Try attempting to the socket. On fail, retry
-		remoteConnected = False
-		while not remoteConnected:
-			try:
-				sock.connect((remoteIP, PORT))
-				remoteConnected = True
-			except:
-				pass
+            #Try attempting to the socket. On fail, retry
+            remoteConnected = False
+            while not remoteConnected:
+                    try:
+                        sock.connect((remoteIP, PORT))
+                        time.sleep(1)
+                        remoteConnected = True
+                    except:
+                        pass
+
+    print("connectSend(): DONE ... Able to send messages to all pis")
 
 def waitRecvConnections():
 	global acceptedCount 
-	global TOTAL_CONNECTION_COUNT
+	global TOTAL_PIS_CONNECTED 
 
 	while acceptedCount != OTHERPIS:
 		continue
 
+def threadedRecvInWaitRecv():
+    return
 
+    
+
+#Initial round of message passing done here
 def waitTotalConnections():
+
+    
+
     print("DONE")
     return
 
@@ -102,6 +117,12 @@ def __main__():
 
     while True:	
         newConnection = acceptor.accept()[0]
+
+        #Map remote IP to the socket we're going to listen on
+        remoteIP = newConnection.getpeername()[0]
+        print("Connection received from IP", remoteIP)
+        recvMap[remoteIP] = newConnection 
+
         acceptedCount += 1		
 		
 if __name__ == '__main__': __main__()
