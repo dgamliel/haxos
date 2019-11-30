@@ -67,13 +67,16 @@ initialVal    = None
 proposingBool = False
 phaseTwoList  = []
 
+#For timeouts
+ackCount = 0
+
 
 def getSocketFromMessage(msg):
 
     global sendMap
 
     _json = json.loads(msg)
-    dest  = _json[dest]
+    dest  = _json["dest"]
 
     return sendMap[dest]
 
@@ -108,17 +111,23 @@ def processNetworkData(msg):
     if state == "PREPARE" :
         receivedBal = _json["ballot"]
 
+
+
         #Cannot accept smaller ballots in the future
         if receivedBal >= ballot:
+            #print("processNetworkData()::111 - Responding to prepare!")
             ballot[0] = receivedBal[0]
             dest = _json["src"]
+
             _json = JSON.jsonMsg(me,dest,state="ACK",ballot = receivedBal,acceptBallot=acceptBallot,acceptVal=acceptVal)	
             sendQueue.put(_json)
+            #print("processNetworkData()::121 - sendQueue", list(sendQueue.queue))
 
 
 
         #If bal smaller than myBal --> Don't respond
         else:
+            #print("processNetworkData()::124 - Ignore smaller ballot")
             lock.release()
             return
 
@@ -242,6 +251,8 @@ def processNetworkData(msg):
         ackCount      = 0
 
 
+
+    print("processNetworkData()::248 - End Processing message", msg)
     lock.release()
 
 
@@ -284,12 +295,14 @@ def sendThread():
 
     global sendQueue
 
-    while not sendQueue.empty():
+    while True:
+        if not sendQueue.empty():
+            message    = sendQueue.get()
+            #print("sendThread()::293 - Sending", message)
+            sendSocket = getSocketFromMessage(message) 
 
-        message    = sendQueue.get()
-        sendSocket = getSocketFromMessage(message) 
 
-        sendSocket.send(message.encode('utf-8'))
+            sendSocket.send(message.encode('utf-8'))
 
 
 def recvThread(recvSock):
@@ -348,9 +361,9 @@ def startPaxos():
 
     for dest in sendMap.keys():
         sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot, x_y_coord = "<0.0, 1.1>")
-        
-        sock = sendMap[dest]
-        sock.send(sendMessage.encode('utf-8'))
+        sendQueue.put(sendMessage)
+        #sock = sendMap[dest]
+        #sock.send(sendMessage.encode('utf-8'))
 
 #This process will occurr before we send any messages
 def setup():
@@ -395,15 +408,21 @@ def __main__():
 
     #### Start Threads ####
     threading.Thread(target=setup, args=()).start()
+    threading.Thread(target=sendThread, args=()).start()
+
 
     while True:	
-        newConnection = acceptor.accept()[0]
 
+        #Get the new connection and immediately start receiving on it
+        newConnection = acceptor.accept()[0]
         threading.Thread(target=recvThread, args=(newConnection,)).start()
 
-        #Map remote IP to the socket we're going to listen on
+        #Grab the remote IP from the socket
         remoteIP = newConnection.getpeername()[0]
         print("Connection received from IP", remoteIP)
+
+        #Map remote IP to the socket we're going to listen on
+        ipAddrs.add(remoteIP)
         recvMap[remoteIP] = newConnection 
 
         #print(recvMap)
