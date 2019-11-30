@@ -8,7 +8,7 @@ import JSON            #Cusom msg formatter for JSON
 import json
 from queue import Queue
 
-PORT   = 10000
+
 NUMPIS = 3
 OTHERPIS = NUMPIS-1
 TOTAL_PIS_CONNECTED = 0
@@ -33,6 +33,18 @@ pVals = paxos.paxosValues()
 #Map the IP to the socket we need to send on
 socketMap = {}
 
+#My IP
+localIP = network.get_ip()
+PORT   = 10000
+
+def sendThread():
+    print("sendThread called!")
+    return
+
+def recvThread():
+    print("recvThread called!")
+    return
+
 def connectSend(openDevices, sendSockets):
 
     #Connect to all other pis found on the network
@@ -45,9 +57,11 @@ def connectSend(openDevices, sendSockets):
             while not remoteConnected:
                     try:
                         sock.connect((remoteIP, PORT))
-                        time.sleep(1)
+                        sendMap[remoteIP] = sock
+                        print("SendMap", sendMap)
                         remoteConnected = True
                     except:
+                        time.sleep(1)
                         pass
 
     print("connectSend(): DONE ... Able to send messages to all pis")
@@ -58,19 +72,6 @@ def waitRecvConnections():
 
 	while acceptedCount != OTHERPIS:
 		continue
-
-def threadedRecvInWaitRecv():
-    return
-
-    
-
-#Initial round of message passing done here
-def waitTotalConnections():
-
-    
-
-    print("DONE")
-    return
 
 
 #This process will occurr before we send any messages
@@ -96,8 +97,9 @@ def setup():
     connectSend(openDevices, sendSockets) #Attempt to connect to all our remotes
 
     waitRecvConnections()  #Wait until we have all our connections received
+    time.sleep(10)          #Extra buffer time to let all other people connect
+
     print("ALL CONNECTIONS RECEIVED - NOW NEED TO IMPLEMENT MESSAGE SENDING")
-    waitTotalConnections() #Send a message to all other pis that are listening, 
 
 
 def __main__():
@@ -107,7 +109,6 @@ def __main__():
     acceptor = socket.socket()	
     acceptor.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    localIP = network.get_ip()
     print("Listening is ", localIP, PORT)
     acceptor.bind((localIP, PORT))
     acceptor.listen(10)
@@ -122,6 +123,8 @@ def __main__():
         remoteIP = newConnection.getpeername()[0]
         print("Connection received from IP", remoteIP)
         recvMap[remoteIP] = newConnection 
+
+        print(recvMap)
 
         acceptedCount += 1		
 		
