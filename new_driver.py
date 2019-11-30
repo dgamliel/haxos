@@ -35,14 +35,30 @@ socketMap = {}
 
 #My IP
 localIP = network.get_ip()
-PORT   = 10000
+PORT    = 10000
 
 def sendThread():
-    print("sendThread called!")
-    return
 
-def recvThread():
-    print("recvThread called!")
+    global sendQueue
+
+    while not sendQueue.empty():
+
+        message    = sendQueue.get()
+        sendSocket = getSocketFromMessage(message) 
+
+        sendSocket.send(message.encode('utf-8'))
+
+
+def recvThread(recvSock):
+    global recvQueue
+
+    while True:
+
+        recvMessage = recvSock.recv(1024).decode('utf-8')
+
+        print("recvThread()::59 Received", recvMessage)
+
+
     return
 
 def connectSend(openDevices, sendSockets):
@@ -74,6 +90,22 @@ def waitRecvConnections():
 		continue
 
 
+
+def startPaxos():
+    global sendQueue
+    global sendMap
+    global localIP
+
+    me = localIP
+
+    ballot = [0, boot.getPiNum()]
+
+    for dest in sendMap.keys():
+        sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot, x_y_coord = "<0.0, 1.1>")
+        
+        sock = sendMap[dest]
+        sock.send(sendMessage.encode('utf-8'))
+
 #This process will occurr before we send any messages
 def setup():
 	
@@ -101,6 +133,8 @@ def setup():
 
     print("ALL CONNECTIONS RECEIVED - NOW NEED TO IMPLEMENT MESSAGE SENDING")
 
+    startPaxos()
+
 
 def __main__():
 
@@ -118,6 +152,8 @@ def __main__():
 
     while True:	
         newConnection = acceptor.accept()[0]
+
+        threading.Thread(target=recvThread, args=(newConnection,)).start()
 
         #Map remote IP to the socket we're going to listen on
         remoteIP = newConnection.getpeername()[0]
