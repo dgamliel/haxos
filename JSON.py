@@ -25,7 +25,7 @@ def splitDualMessage(message):
 			msg = '{' + msg
 			retList.append(msg)
 
-	print(retList)
+	#print("JSON.py 12: ", retList)
 	return retList
 
 

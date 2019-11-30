@@ -28,16 +28,23 @@ sendQueue = Queue()
 recvMap = {}
 sendMap = {}
 
-pVals = paxos.paxosValues()
+#Deprecated
+#pVals = paxos.paxosValues()
 
 #Map the IP to the socket we need to send on
 #socketMap = {}
 ipAddrs = set()
 
+#Lock for concurrency
+lock = threading.Lock()
+
+
 #My IP
 localIP = network.get_ip()
 PORT    = 10000
 
+#To be used in processNetworkData
+me = localIP
 
 '''
 # ballot = <Num, pid, depth of block>
@@ -72,7 +79,9 @@ def getSocketFromMessage(msg):
 
 
 
-def processNetworkData():
+def processNetworkData(msg):
+
+    print("processNetworkData()::84 - Processing", msg)
 
     global lock
     lock.acquire()
@@ -86,10 +95,11 @@ def processNetworkData():
     global sendQueue
     global transactions
     global proposingBool
-    global depth
-    global blockChain
-    global chainList
-    global chainsRecevied
+    #global depth
+    #global blockChain
+    #global chainList
+    #global chainsRecevied
+    global me
 
     #Load json msg and get state
     _json = json.loads(msg)
@@ -102,7 +112,7 @@ def processNetworkData():
         if receivedBal >= ballot:
             ballot[0] = receivedBal[0]
             dest = _json["src"]
-            _json = jsonMsg(name,dest,state="ACK",ballot = receivedBal,acceptBallot=acceptBallot,acceptVal=acceptVal)	
+            _json = JSON.jsonMsg(me,dest,state="ACK",ballot = receivedBal,acceptBallot=acceptBallot,acceptVal=acceptVal)	
             sendQueue.put(_json)
 
 
@@ -137,14 +147,14 @@ def processNetworkData():
                 acceptVal = receivedV
 
                 src=  _json["src"]
-                _json = jsonMsg(name,src,ballot=receivedBal,x_y_coord=acceptVal,state="ACCEPT")
+                _json = JSON.jsonMsg(me,src,ballot=receivedBal,x_y_coord=acceptVal,state="ACCEPT")
                 sendQueue.put(_json)
                 lock.release()
                 return
 
         if acceptCount==3: #case (leader)
             for dest in ipAddrs:
-                _json = jsonMsg(name,dest,ballot=receivedBal,x_y_coord=receivedV,state="DECIDE")
+                _json = JSON.jsonMsg(me,dest,ballot=receivedBal,x_y_coord=receivedV,state="DECIDE")
                 sendQueue.put(_json)
             #TODO: Update self values so that we consider a message sent to ourselves
 
@@ -175,7 +185,7 @@ def processNetworkData():
         ackCount = 0
 
         #call paxos to see if it should run
-        paxos()
+        startPaxos()
 
 
 
@@ -219,7 +229,7 @@ def processNetworkData():
 
 #send accept, ballot,myVal to all
                 for dest in ipAddrs:
-                    _json = jsonMsg(name,dest,x_y_coord=myVal,ballot=ballot,state="ACCEPT")
+                    _json = JSON.jsonMsg(me,dest,x_y_coord=myVal,ballot=ballot,state="ACCEPT")
                     sendQueue.put(_json)
 
 
@@ -249,7 +259,7 @@ def processNetworkData():
     nonce = block.header.nonce
 
     x_y_coord = jsonBlock(txA, txB, depth,_hash,nonce)
-    _json = jsonMsg(name, dest, x_y_coord, ballot=ballot, state="UPDATE")
+    _json = JSON.jsonMsg(name, dest, x_y_coord, ballot=ballot, state="UPDATE")
     sendQueue.put(_json)
 
     elif state == "UPDATE":
@@ -289,7 +299,11 @@ def recvThread(recvSock):
 
         recvMessage = recvSock.recv(1024).decode('utf-8')
 
-        print("recvThread()::59 Received", recvMessage)
+        
+        for message in JSON.splitDualMessage(recvMessage): 
+            processNetworkData(recvMessage)
+
+        #print("recvThread()::59 Received", recvMessage)
 
     return
 
