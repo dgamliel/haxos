@@ -74,7 +74,7 @@ def connectSend(openDevices, sendSockets):
                     try:
                         sock.connect((remoteIP, PORT))
                         sendMap[remoteIP] = sock
-                        print("SendMap", sendMap)
+                        #print("SendMap", sendMap)
                         remoteConnected = True
                     except:
                         time.sleep(1)
@@ -160,7 +160,7 @@ def __main__():
         print("Connection received from IP", remoteIP)
         recvMap[remoteIP] = newConnection 
 
-        print(recvMap)
+        #print(recvMap)
 
         acceptedCount += 1		
 		
