@@ -5,6 +5,7 @@ import paxos
 import network
 import boot
 import JSON            #Cusom msg formatter for JSON
+import math
 import json
 from queue import Queue
 
@@ -70,6 +71,15 @@ phaseTwoList  = []
 #For timeouts
 ackCount = 0
 
+MAJORITY = math.ceil(NUMPIS/2)
+
+def startTimer():
+	#After 5 seconds
+	print('\nTimer started for 10 seconds!\n')
+	sleep(10)
+	if ackCount == 2:
+		abortMsg = jsonMsg(name, name, state="ABORT")
+		sendQueue.put(abortMsg)
 
 def getSocketFromMessage(msg):
 
