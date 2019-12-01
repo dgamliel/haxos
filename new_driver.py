@@ -222,7 +222,7 @@ def processNetworkData(msg):
         phaseTwoList.append(acceptPair)
 
         #Received from majority
-        if len(phaseTwoList)==3:
+        if len(phaseTwoList)==MAJORITY:
 
             #Vars to hold highest ballot and checking flags
             myValChosen = True
