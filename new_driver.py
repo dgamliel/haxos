@@ -29,11 +29,7 @@ sendQueue = Queue()
 recvMap = {}
 sendMap = {}
 
-#Deprecated
-#pVals = paxos.paxosValues()
-
-#Map the IP to the socket we need to send on
-#socketMap = {}
+#Set of other addresses
 ipAddrs = set()
 
 #Lock for concurrency
@@ -127,9 +123,10 @@ def processNetworkData(msg):
         if receivedBal >= ballot:
             #print("processNetworkData()::111 - Responding to prepare!")
             ballot[0] = receivedBal[0]
-            dest = _json["src"]
+            dest  = _json["src"]
+            coord = _json["x_y_coord"] 
 
-            _json = JSON.jsonMsg(me,dest,state="ACK",ballot = receivedBal,acceptBallot=acceptBallot,acceptVal=acceptVal)	
+            _json = JSON.jsonMsg(me,dest,state="ACK",ballot = receivedBal,acceptBallot=acceptBallot,acceptVal=acceptVal, x_y_coord=coord)	
             sendQueue.put(_json)
             #print("processNetworkData()::121 - sendQueue", list(sendQueue.queue))
 
