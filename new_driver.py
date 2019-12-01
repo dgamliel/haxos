@@ -76,7 +76,7 @@ MAJORITY = math.ceil(NUMPIS/2)
 def startTimer():
 	#After 5 seconds
 	print('\nTimer started for 10 seconds!\n')
-	sleep(10)
+	time.sleep(10)
 	if ackCount == 2:
 		abortMsg = jsonMsg(name, name, state="ABORT")
 		sendQueue.put(abortMsg)
