@@ -321,7 +321,6 @@ def recvThread(recvSock):
     while True:
 
         recvMessage = recvSock.recv(1024).decode('utf-8')
-
         
         for message in JSON.splitDualMessage(recvMessage): 
             processNetworkData(recvMessage)
