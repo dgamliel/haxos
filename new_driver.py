@@ -87,8 +87,6 @@ def getSocketFromMessage(msg):
 
     return sendMap[dest]
 
-
-
 def processNetworkData(msg):
 
     print("processNetworkData()::84 - Processing", msg)
@@ -118,8 +116,6 @@ def processNetworkData(msg):
     if state == "PREPARE" :
         receivedBal = _json["ballot"]
 
-
-
         #Cannot accept smaller ballots in the future
         if receivedBal >= ballot:
             #print("processNetworkData()::111 - Responding to prepare!")
@@ -127,7 +123,7 @@ def processNetworkData(msg):
             dest  = _json["src"]
             coord = _json["x_y_coord"] 
 
-            _json = JSON.jsonMsg(me,dest,state="ACK",ballot = receivedBal,acceptBallot=acceptBallot,acceptVal=acceptVal, x_y_coord=coord)	
+            _json = JSON.jsonMsg(me,dest,state="ACK",ballot = receivedBal,acceptBallot=acceptBallot,acceptVal=coord, x_y_coord=coord)	
             sendQueue.put(_json)
             #print("processNetworkData()::121 - sendQueue", list(sendQueue.queue))
 
@@ -168,8 +164,9 @@ def processNetworkData(msg):
                 sendQueue.put(_json)
                 lock.release()
                 return
-
-        if acceptCount==3: #case (leader)
+        
+        #TODO: CHECK WHAT THIS COUNT SHOULD BE - I'M NOT ENTIRELY SURE USED TO BE 2
+        if acceptCount==MAJORITY: #case (leader)
             for dest in ipAddrs:
                 _json = JSON.jsonMsg(me,dest,ballot=receivedBal,x_y_coord=receivedV,state="DECIDE")
                 sendQueue.put(_json)
@@ -202,7 +199,7 @@ def processNetworkData(msg):
         ackCount = 0
 
         #call paxos to see if it should run
-        startPaxos()
+        #startPaxos()
 
 
 
@@ -244,9 +241,9 @@ def processNetworkData(msg):
                     myVal = initialVal
 
 
-#send accept, ballot,myVal to all
+                #send accept, ballot,myVal to all
                 for dest in ipAddrs:
-                    _json = JSON.jsonMsg(me,dest,x_y_coord=myVal,ballot=ballot,state="ACCEPT")
+                    _json = JSON.jsonMsg(me,dest,x_y_coord=myVal,acceptVal=myVal,ballot=ballot,state="ACCEPT")
                     sendQueue.put(_json)
 
 
@@ -260,7 +257,6 @@ def processNetworkData(msg):
 
 
 
-    print("processNetworkData()::248 - End Processing message", msg)
     lock.release()
 
 
