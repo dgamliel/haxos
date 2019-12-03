@@ -1,3 +1,4 @@
+### TODO: Figure out why X_Y_COORD doesn't propegate from prepare to accept/ack ###
 import time
 import socket
 import threading
@@ -320,7 +321,7 @@ def recvThread(recvSock):
         recvMessage = recvSock.recv(1024).decode('utf-8')
         
         for message in JSON.splitDualMessage(recvMessage): 
-            processNetworkData(recvMessage)
+            processNetworkData(message)
 
         #print("recvThread()::59 Received", recvMessage)
 
