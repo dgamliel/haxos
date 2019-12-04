@@ -133,9 +133,8 @@ def processNetworkData(msg):
             #print("processNetworkData()::111 - Responding to prepare!")
             ballot[0] = receivedBal[0]
             dest  = _json["src"]
-            coord = _json["x_y_coord"] 
 
-            _json = JSON.jsonMsg(me,dest,state="ACK",ballot = receivedBal,acceptBallot=acceptBallot,acceptVal=coord, x_y_coord=coord)	
+            _json = JSON.jsonMsg(me,dest,state="ACK",ballot = receivedBal,acceptBallot=acceptBallot,acceptVal=acceptVal)	
             sendQueue.put(_json)
             #print("processNetworkData()::121 - sendQueue", list(sendQueue.queue))
 
