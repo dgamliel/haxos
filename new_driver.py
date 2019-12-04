@@ -45,6 +45,10 @@ PORT    = 10000
 #To be used in processNetworkData
 me = localIP
 
+#Self socket - send messages to self
+selfSocket = socket.socket()
+
+
 '''
 # ballot = <Num, pid, depth of block>
 # "An acceptor doesnot accept, prepare, or accept messages from a contending leader
@@ -377,7 +381,7 @@ def startPaxos():
     
 
     for dest in sendMap.keys():
-        sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot, x_y_coord = "<0.0, 1.1>")
+        sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot, x_y_coord = "<0.0," +str(MY_PI) +">")
         sendQueue.put(sendMessage)
         #sock = sendMap[dest]
         #sock.send(sendMessage.encode('utf-8'))
@@ -386,6 +390,23 @@ def startPaxos():
 def setup():
 	
     connected=False
+    selfConnected = False
+    #Try to connect to self
+
+    while not selfConnected:
+        try:
+            selfSocket.connect((localIP, PORT))
+
+            ipAddrs.add(localIP)
+            sendMap[localIP] = selfSocket
+            print("ipAddrs", ipAddrs)
+
+            selfConnected = True
+        except Exception as e:
+            print(e)
+
+
+    
 
     while not connected:
         openDevices = network.scanForPis()
@@ -410,7 +431,6 @@ def setup():
     print("ALL CONNECTIONS RECEIVED - NOW NEED TO IMPLEMENT MESSAGE SENDING")
 
     startPaxos()
-
 
 def __main__():
 
@@ -440,7 +460,7 @@ def __main__():
 
         #Map remote IP to the socket we're going to listen on
         ipAddrs.add(remoteIP)
-        recvMap[remoteIP] = newConnection 
+        #recvMap[remoteIP] = newConnection 
 
         #print(recvMap)
 
