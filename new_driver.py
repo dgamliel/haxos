@@ -78,9 +78,9 @@ def startTimer():
         global ackCount
 
 	#After 5 seconds
-	print('\nTimer started for 10 seconds!\n')
-	time.sleep(10)
-	if ackCount == 2:
+        print('\nTimer started for 10 seconds!\n')
+        time.sleep(10)
+        if ackCount == 2:
 
             print("ABORING! ACK COUNT IS STUCK")
             #Reset paxos values
