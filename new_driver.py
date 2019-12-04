@@ -71,6 +71,12 @@ ackCount = 0
 MAJORITY = math.ceil(NUMPIS/2)
 
 def startTimer():
+
+        global proposingBool
+        global acceptBallot
+        global acceptval
+        global ackCount
+
 	#After 5 seconds
 	print('\nTimer started for 10 seconds!\n')
 	time.sleep(10)
