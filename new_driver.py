@@ -1,4 +1,5 @@
-### TODO: Figure out why X_Y_COORD doesn't propegate from prepare to accept/ack ###
+### TODO: Figure out why the value is being committed twice ?? ###
+### Remember: I love you - Hilda ###
 import time
 import socket
 import threading
@@ -101,7 +102,7 @@ def getSocketFromMessage(msg):
 
 def processNetworkData(msg):
 
-    print("processNetworkData()::84 - Processing", msg)
+    #print("processNetworkData()::84 - Processing", msg)
 
     global lock
     lock.acquire()
@@ -115,15 +116,14 @@ def processNetworkData(msg):
     global sendQueue
     global transactions
     global proposingBool
-    #global depth
-    #global blockChain
-    #global chainList
-    #global chainsRecevied
     global me
 
     #Load json msg and get state
     _json = json.loads(msg)
     state = _json["state"]
+    debugSrc = _json["src"]
+
+    print("SRC", debugSrc, "STATE", state)
 
     if state == "PREPARE" :
         receivedBal = _json["ballot"]
@@ -143,7 +143,6 @@ def processNetworkData(msg):
 
         #If bal smaller than myBal --> Don't respond
         else:
-            #print("processNetworkData()::124 - Ignore smaller ballot")
             lock.release()
             return
 
@@ -200,7 +199,7 @@ def processNetworkData(msg):
         x_y_coord = _json["x_y_coord"]
 
         #TODO: WRITE TO FILE
-        with open('paxos.log', 'a+') as f:
+        with open('log.paxos', 'a+') as f:
             f.write(x_y_coord + "\n")
             f.close()
 
@@ -372,7 +371,11 @@ def startPaxos():
 
     me = localIP
 
-    ballot[0] += 1
+    ballot[0]    += 1
+    proposingBool = True
+    phaseTwoList = []
+    acceptVal = ""
+    
 
     for dest in sendMap.keys():
         sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot, x_y_coord = "<0.0, 1.1>")
