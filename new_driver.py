@@ -189,7 +189,7 @@ def processNetworkData(msg):
 
         #TODO: WRITE TO FILE
         with open('paxos.log', 'a+') as f:
-            f.write(x_y_coord)
+            f.write(x_y_coord + "\n")
             f.close()
 
         #reset paxos vals for next round
@@ -199,7 +199,7 @@ def processNetworkData(msg):
         ackCount = 0
 
         #call paxos to see if it should run
-        #startPaxos()
+        startPaxos()
 
 
 
@@ -360,7 +360,7 @@ def startPaxos():
 
     me = localIP
 
-    ballot = [0, boot.getPiNum()]
+    ballot[0] += 1
 
     for dest in sendMap.keys():
         sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot, x_y_coord = "<0.0, 1.1>")
