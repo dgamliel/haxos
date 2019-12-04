@@ -75,8 +75,14 @@ def startTimer():
 	print('\nTimer started for 10 seconds!\n')
 	time.sleep(10)
 	if ackCount == 2:
-		abortMsg = jsonMsg(name, name, state="ABORT")
-		sendQueue.put(abortMsg)
+
+            print("ABORING! ACK COUNT IS STUCK")
+            #Reset paxos values
+            proposingBool = False
+            acceptBallot  = [0,0]
+            acceptVal     = ""
+            ackCount      = 0
+
 
 def getSocketFromMessage(msg):
 
@@ -199,7 +205,7 @@ def processNetworkData(msg):
         ackCount = 0
 
         #call paxos to see if it should run
-        startPaxos()
+        #startPaxos()
 
 
 
