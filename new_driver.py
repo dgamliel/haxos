@@ -177,6 +177,7 @@ def processNetworkData(msg):
 
                 src=  _json["src"]
                 _json = JSON.jsonMsg(me,src,ballot=receivedBal,x_y_coord=acceptVal,state="ACCEPT")
+                print("case: receivedBal[0] >= ballot[0] ... ballot", ballot, "x_y_coord", acceptVal) 
                 sendQueue.put(_json)
                 lock.release()
                 return
@@ -228,6 +229,9 @@ def processNetworkData(msg):
         receivedVal = _json["acceptVal"]
         receivedBal = _json["acceptBallot"]
 
+        print("receivedVal", receivedVal)
+        print("receivedBal", receivedBal) 
+
         #acceptPair <-- acceptBallot , acceptval
         acceptPair = [receivedBal,receivedVal]
         phaseTwoList.append(acceptPair)
@@ -260,6 +264,7 @@ def processNetworkData(msg):
                 #send accept, ballot,myVal to all
                 for dest in ipAddrs:
                     _json = JSON.jsonMsg(me,dest,x_y_coord=myVal,acceptVal=myVal,ballot=ballot,state="ACCEPT")
+                    print("case: len(phaseTwoList)==MAJORITY", ballot, "x_y_coord", acceptVal) 
                     sendQueue.put(_json)
 
 
@@ -403,7 +408,7 @@ def setup():
         try:
             selfSocket.connect((localIP, PORT))
 
-            ipAddrs.add(localIP)
+            #ipAddrs.add(localIP)
             sendMap[localIP] = selfSocket
             print("ipAddrs", ipAddrs)
 
