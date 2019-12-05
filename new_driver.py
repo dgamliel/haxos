@@ -187,12 +187,12 @@ def processNetworkData(msg):
             for dest in ipAddrs:
                 _json = JSON.jsonMsg(me,dest,ballot=receivedBal,x_y_coord=receivedV,state="DECIDE")
                 sendQueue.put(_json)
-            #TODO: Update self values so that we consider a message sent to ourselves
 
             #remove block from transaction queue
             #only pop if proposing own value!!!!!!!!!!
+            #reset the value??
             if(receivedV==initialVal):
-                ackCount = 0
+                pass
 
             #set proposing to false
             proposingBool=False
