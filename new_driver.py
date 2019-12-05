@@ -262,6 +262,7 @@ def processNetworkData(msg):
 
 
                 #send accept, ballot,myVal to all
+                print("case: len(phaseTwoList)==MAJORITY",ipAddrs)
                 for dest in ipAddrs:
                     _json = JSON.jsonMsg(me,dest,x_y_coord=myVal,acceptVal=myVal,ballot=ballot,state="ACCEPT")
                     print("case: len(phaseTwoList)==MAJORITY", ballot, "x_y_coord", acceptVal) 
