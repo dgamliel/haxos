@@ -59,6 +59,7 @@ selfSocket = socket.socket()
 #Paxos info
 pid          = boot.getPiNum()
 ballot       = [0,pid]
+print("MY BALLOT", ballot)
 acceptBallot = [0,0]
 acceptVal    = ""
 depth        = 0
@@ -130,7 +131,8 @@ def processNetworkData(msg):
     state = _json["state"]
     debugSrc = _json["src"]
 
-    print("SRC", debugSrc, "STATE", state)
+    print("RECEIVED", msg)
+    #print("SRC", debugSrc, "STATE", state)
 
     if state == "PREPARE" :
         receivedBal = _json["ballot"]
@@ -338,6 +340,7 @@ def sendThread():
             sendSocket = getSocketFromMessage(message) 
 
 
+            print("SENDING", message)
             sendSocket.send(message.encode('utf-8'))
 
 
