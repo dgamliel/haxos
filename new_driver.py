@@ -122,6 +122,7 @@ def processNetworkData(msg):
     global sendQueue
     global transactions
     global proposingBool
+    global initialVal
     global me
 
     #Load json msg and get state
@@ -381,6 +382,7 @@ def startPaxos():
     global sendQueue
     global sendMap
     global localIP
+    global initialVal
 
     me = localIP
 
