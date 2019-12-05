@@ -174,7 +174,7 @@ def processNetworkData(msg):
         if acceptCount == 1: #case (not leader)
 
             #received ballot >= currentballot number, then we "commit" to that value
-            if receivedBal[0] >= ballot[0]:
+            if receivedBal >= ballot:
 
                 acceptBallot = receivedBal
                 acceptVal = receivedV
