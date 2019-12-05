@@ -142,6 +142,7 @@ def processNetworkData(msg):
             dest  = _json["src"]
 
             _json = JSON.jsonMsg(me,dest,state="ACK",ballot = receivedBal,acceptBallot=acceptBallot,acceptVal=acceptVal)	
+            print(_json)
             sendQueue.put(_json)
             #print("processNetworkData()::121 - sendQueue", list(sendQueue.queue))
 
@@ -151,7 +152,8 @@ def processNetworkData(msg):
         else:
             lock.release()
             return
-
+###END
+"""
     elif state == "ACCEPT":
 
         receivedBal = _json["ballot"]
@@ -270,7 +272,6 @@ def processNetworkData(msg):
             print("case: len(phaseTwoList)==MAJORITY",ipAddrs)
             for dest in ipAddrs:
                 _json = JSON.jsonMsg(me,dest,x_y_coord=myVal,acceptVal=myVal,ballot=ballot,state="ACCEPT")
-                print("case: len(phaseTwoList)==MAJORITY", ballot, "x_y_coord", acceptVal) 
                 sendQueue.put(_json)
 
 
@@ -287,7 +288,8 @@ def processNetworkData(msg):
 
 
     lock.release()
-
+"""
+###END
 
     '''
     elif state == "PING":
