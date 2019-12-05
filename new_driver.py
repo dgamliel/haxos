@@ -152,8 +152,8 @@ def processNetworkData(msg):
         else:
             lock.release()
             return
-###END
-"""
+    ###END
+    """
     elif state == "ACCEPT":
 
         receivedBal = _json["ballot"]
@@ -288,8 +288,9 @@ def processNetworkData(msg):
 
 
     lock.release()
-"""
-###END
+
+    """
+    ###END
 
     '''
     elif state == "PING":
