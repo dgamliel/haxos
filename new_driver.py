@@ -123,6 +123,7 @@ def processNetworkData(msg):
     global transactions
     global proposingBool
     global me
+    global initialVal
 
     #Load json msg and get state
     _json = json.loads(msg)
@@ -159,6 +160,9 @@ def processNetworkData(msg):
         #Check if we received the ballot before
         #if first time receiving ballot --> set ballot count to 1
         #else --> increment ballot count
+
+        print(acceptCountDict)
+
         if str(receivedBal) not in acceptCountDict.keys():
             acceptCountDict[str(receivedBal)] = 1
 
@@ -381,6 +385,7 @@ def startPaxos():
     global sendQueue
     global sendMap
     global localIP
+    global initialVal
 
     me = localIP
 
