@@ -20,7 +20,6 @@ TOTAL_PIS_CONNECTED = 0
 acceptedCount = 0
 
 sendSockets = [socket.socket() for i in range(OTHERPIS)]
-print(sendSockets)
 
 #ID of each PI
 MY_PI = boot.getPiNum()
@@ -60,7 +59,6 @@ selfSocket = socket.socket()
 #Paxos info
 pid          = boot.getPiNum()
 ballot       = [0,pid]
-print("MY BALLOT", ballot)
 acceptBallot = [0,0]
 acceptVal    = ""
 depth        = 0
@@ -125,15 +123,13 @@ def processNetworkData(msg):
     global transactions
     global proposingBool
     global me
-    global initialVal
 
     #Load json msg and get state
     _json = json.loads(msg)
     state = _json["state"]
     debugSrc = _json["src"]
 
-    print("RECEIVED", msg)
-    #print("SRC", debugSrc, "STATE", state)
+    print("SRC", debugSrc, "STATE", state)
 
     if state == "PREPARE" :
         receivedBal = _json["ballot"]
@@ -145,17 +141,16 @@ def processNetworkData(msg):
             dest  = _json["src"]
 
             _json = JSON.jsonMsg(me,dest,state="ACK",ballot = receivedBal,acceptBallot=acceptBallot,acceptVal=acceptVal)	
-            print(_json)
             sendQueue.put(_json)
             #print("processNetworkData()::121 - sendQueue", list(sendQueue.queue))
-            lock.release()
+
 
 
         #If bal smaller than myBal --> Don't respond
         else:
             lock.release()
             return
-    ###END
+
     elif state == "ACCEPT":
 
         receivedBal = _json["ballot"]
@@ -164,9 +159,6 @@ def processNetworkData(msg):
         #Check if we received the ballot before
         #if first time receiving ballot --> set ballot count to 1
         #else --> increment ballot count
-
-        print(acceptCountDict)
-
         if str(receivedBal) not in acceptCountDict.keys():
             acceptCountDict[str(receivedBal)] = 1
 
@@ -178,14 +170,14 @@ def processNetworkData(msg):
         if acceptCount == 1: #case (not leader)
 
             #received ballot >= currentballot number, then we "commit" to that value
-            if receivedBal >= ballot:
+            if receivedBal[0] >= ballot[0]:
 
                 acceptBallot = receivedBal
                 acceptVal = receivedV
 
                 src=  _json["src"]
                 _json = JSON.jsonMsg(me,src,ballot=receivedBal,x_y_coord=acceptVal,state="ACCEPT")
-                print("case: receivedBal >= ballot - received, my", receivedBal, ballot, "x_y_coord", acceptVal) 
+                print("case: receivedBal[0] >= ballot[0] ... ballot", ballot, "x_y_coord", acceptVal) 
                 sendQueue.put(_json)
                 lock.release()
                 return
@@ -252,7 +244,6 @@ def processNetworkData(msg):
             highestBal = [-1,-1]
             myVal = None
 
-            print(phaseTwoList)
             for pair in phaseTwoList:
 
                 #case acceptor node has accepted value
@@ -270,10 +261,11 @@ def processNetworkData(msg):
                     myVal = initialVal
 
 
-            #send accept, ballot,myVal to all
+                #send accept, ballot,myVal to all
             print("case: len(phaseTwoList)==MAJORITY",ipAddrs)
             for dest in ipAddrs:
                 _json = JSON.jsonMsg(me,dest,x_y_coord=myVal,acceptVal=myVal,ballot=ballot,state="ACCEPT")
+                print("case: len(phaseTwoList)==MAJORITY", ballot, "x_y_coord", acceptVal) 
                 sendQueue.put(_json)
 
 
@@ -291,7 +283,6 @@ def processNetworkData(msg):
 
     lock.release()
 
-    ###END
 
     '''
     elif state == "PING":
@@ -339,7 +330,6 @@ def sendThread():
             sendSocket = getSocketFromMessage(message) 
 
 
-            print("SENDING", message)
             sendSocket.send(message.encode('utf-8'))
 
 
@@ -370,10 +360,7 @@ def connectSend(openDevices, sendSockets):
                     try:
                         sock.connect((remoteIP, PORT))
                         sendMap[remoteIP] = sock
-
-                        message = "Hello from " + MY_PI
-                        sendMap[remoteIP].send(message.encode('utf-8'))
-
+                        #print("SendMap", sendMap)
                         remoteConnected = True
                     except:
                         time.sleep(1)
@@ -394,7 +381,6 @@ def startPaxos():
     global sendQueue
     global sendMap
     global localIP
-    global initialVal
 
     me = localIP
 
@@ -404,11 +390,9 @@ def startPaxos():
     acceptVal = ""
     
 
-    initialVal = MYPI + " " + network.getRSSI()
+    initialVal = "<0.0," +str(MY_PI) +">"
 
-    print("Send map",sendMap.keys())
-    print("ipAdrrs",ipAddrs)
-    for dest in ipAddrs:
+    for dest in sendMap.keys():
         sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot)
         sendQueue.put(sendMessage)
         #sock = sendMap[dest]
@@ -495,3 +479,4 @@ def __main__():
         acceptedCount += 1		
 		
 if __name__ == '__main__': __main__()
+
