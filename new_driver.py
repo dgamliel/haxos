@@ -181,7 +181,7 @@ def processNetworkData(msg):
 
                 src=  _json["src"]
                 _json = JSON.jsonMsg(me,src,ballot=receivedBal,x_y_coord=acceptVal,state="ACCEPT")
-                print("case: receivedBal[0] >= ballot[0] ... ballot", ballot, "x_y_coord", acceptVal) 
+                print("case: receivedBal[0] >= ballot[0] - received, my", receivedBal, ballot, "x_y_coord", acceptVal) 
                 sendQueue.put(_json)
                 lock.release()
                 return
