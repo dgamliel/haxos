@@ -20,6 +20,7 @@ TOTAL_PIS_CONNECTED = 0
 acceptedCount = 0
 
 sendSockets = [socket.socket() for i in range(OTHERPIS)]
+print(sendSockets)
 
 #ID of each PI
 MY_PI = boot.getPiNum()
@@ -147,7 +148,7 @@ def processNetworkData(msg):
             print(_json)
             sendQueue.put(_json)
             #print("processNetworkData()::121 - sendQueue", list(sendQueue.queue))
-
+            lock.release()
 
 
         #If bal smaller than myBal --> Don't respond
@@ -404,7 +405,9 @@ def startPaxos():
 
     initialVal = "<0.0," +str(MY_PI) +">"
 
-    for dest in sendMap.keys():
+    print("Send map",sendMap.keys())
+    print("ipAdrrs",ipAddrs)
+    for dest in ipAddrs:
         sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot)
         sendQueue.put(sendMessage)
         #sock = sendMap[dest]
