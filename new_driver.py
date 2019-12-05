@@ -156,7 +156,6 @@ def processNetworkData(msg):
             lock.release()
             return
     ###END
-    """
     elif state == "ACCEPT":
 
         receivedBal = _json["ballot"]
@@ -292,7 +291,6 @@ def processNetworkData(msg):
 
     lock.release()
 
-    """
     ###END
 
     '''
@@ -372,7 +370,10 @@ def connectSend(openDevices, sendSockets):
                     try:
                         sock.connect((remoteIP, PORT))
                         sendMap[remoteIP] = sock
-                        #print("SendMap", sendMap)
+
+                        message = "Hello from " + MY_PI
+                        sendMap[remoteIP].send(message.encode('utf-8'))
+
                         remoteConnected = True
                     except:
                         time.sleep(1)
