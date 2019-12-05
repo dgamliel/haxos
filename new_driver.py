@@ -372,7 +372,7 @@ def waitRecvConnections():
     global acceptedCount 
     global TOTAL_PIS_CONNECTED 
 
-    while acceptedCount != OTHERPIS:
+    while acceptedCount != NUMPIS:
             continue
 
     print("waitRecvConnections(): DONE ... Able to receive messages from all pis")
