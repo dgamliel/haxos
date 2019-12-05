@@ -1,5 +1,6 @@
 ### TODO: Figure out why the value is being committed twice ?? ###
-### Remember: I love you - Hilda ###
+### Remember: I love you - Hilda (Baby Girl)###
+### FOR dest in IPADDRS ALWAYS SENDS TO SELF ###
 import time
 import socket
 import threading
@@ -74,6 +75,7 @@ phaseTwoList  = []
 ackCount = 0
 
 MAJORITY = math.ceil(NUMPIS/2)
+print("MAJORITY IS ", MAJORITY)
 
 def startTimer():
 
@@ -261,6 +263,8 @@ def processNetworkData(msg):
                     sendQueue.put(_json)
 
 
+
+
     elif state == "ABORT":
 
         #Reset paxos values
@@ -380,8 +384,10 @@ def startPaxos():
     acceptVal = ""
     
 
+    initialVal = "<0.0," +str(MY_PI) +">"
+
     for dest in sendMap.keys():
-        sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot, x_y_coord = "<0.0," +str(MY_PI) +">")
+        sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot)
         sendQueue.put(sendMessage)
         #sock = sendMap[dest]
         #sock.send(sendMessage.encode('utf-8'))
