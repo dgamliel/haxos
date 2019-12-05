@@ -1,5 +1,5 @@
 from getmac import get_mac_address
-
+import subprocess
 import socket
 def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -27,3 +27,20 @@ def scanForPis():
 			pis.append(madeIP)
 
 	return pis
+
+def getRSSI():
+
+	found = False
+
+	while not found:
+		subprocess.run(['./scan.sh'])
+		with open('blue.data') as f:
+			lines = f.readlines()
+
+			for line in lines:
+				if 'RSSI' in line and 'DC:44' in line:
+					print(int(line.strip().split()[-1]))
+					return int(line.strip().split()[-1])
+
+		print("UNABLE TO FIND DEVICE. SCANNING")
+

@@ -404,7 +404,7 @@ def startPaxos():
     acceptVal = ""
     
 
-    initialVal = "<0.0," +str(MY_PI) +">"
+    initialVal = MYPI + " " + network.getRSSI()
 
     print("Send map",sendMap.keys())
     print("ipAdrrs",ipAddrs)
