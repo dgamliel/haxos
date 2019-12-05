@@ -390,7 +390,7 @@ def startPaxos():
     acceptVal = ""
     
 
-    initialVal = "<0.0," +str(MY_PI) +">"
+    initialVal = MYPI + " " + network.getRSSI()
 
     for dest in sendMap.keys():
         sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot)
