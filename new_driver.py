@@ -13,7 +13,7 @@ import json
 from queue import Queue
 
 
-NUMPIS = 3
+NUMPIS = 5
 OTHERPIS = NUMPIS-1
 TOTAL_PIS_CONNECTED = 0
 
@@ -391,14 +391,16 @@ def startPaxos():
     phaseTwoList = []
     acceptVal = ""
     
+    while True:
+        initialVal = str(MY_PI) + ":" + str(network.getRSSI())
 
-    initialVal = str(MY_PI) + ":" + str(network.getRSSI())
+        for dest in sendMap.keys():
+            sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot)
+            sendQueue.put(sendMessage)
+            #sock = sendMap[dest]
+            #sock.send(sendMessage.encode('utf-8'))
 
-    for dest in sendMap.keys():
-        sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot)
-        sendQueue.put(sendMessage)
-        #sock = sendMap[dest]
-        #sock.send(sendMessage.encode('utf-8'))
+        time.sleep(random.randint(3,7))
 
 #This process will occurr before we send any messages
 def setup():
