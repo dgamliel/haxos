@@ -393,15 +393,16 @@ def startPaxos():
     acceptVal = ""
     
     while True:
-        initialVal = str(MY_PI) + ":" + str(network.getRSSI())
+        if MY_PI == 1:
+            initialVal = str(MY_PI) + ":" + str(network.getRSSI())
 
-        for dest in sendMap.keys():
-            sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot)
-            sendQueue.put(sendMessage)
-            #sock = sendMap[dest]
-            #sock.send(sendMessage.encode('utf-8'))
+            for dest in sendMap.keys():
+                sendMessage = JSON.jsonMsg(me,dest,state="PREPARE",ballot=ballot)
+                sendQueue.put(sendMessage)
+                #sock = sendMap[dest]
+                #sock.send(sendMessage.encode('utf-8'))
 
-        time.sleep(random.randint(3,7))
+            time.sleep(random.randint(3,7))
 
 #This process will occurr before we send any messages
 def setup():
